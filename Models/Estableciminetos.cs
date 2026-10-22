@@ -15,5 +15,5 @@ public class Establecimientos
     public TipoEstableciminetos TipoEstableciminetos {get;set;}
     public int DistritoId {get;set;}
     public Distritos Distritos {get;set;}
-    List<Tramites> Tramites {get;set;} = new List<Tramites>;
+    List<Tramites> Tramites {get;set;} = new ();
 }

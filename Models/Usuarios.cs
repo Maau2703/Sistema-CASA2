@@ -14,7 +14,7 @@ public class Usuarios
     public Roles Roles {get;set;}
     public int DistritoId {get;set;}
     public Distritos Distritos {get;set;}
-    public List<Comentarios> comentarios {get;set;} = new List<Comentarios>;
+    public List<Comentarios> comentarios {get;set;} = new ();
     public Ciudadanos ciudadanos{get;set;}
     //fecha de registro
     public DateOnly Created_at {get;set;}
