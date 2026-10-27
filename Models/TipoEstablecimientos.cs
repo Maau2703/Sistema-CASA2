@@ -1,7 +1,8 @@
 namespace Proyecto.Models;
-public class TipoEstableciminetos
+
+public class TipoEstablecimientos
 {
-    public int Id {get;set;}
-    public string nombre {get;set;}
-    List<Establecimientos> Establecimientos {get;set;} = new ();
+    public int Id { get; set; }
+    public string nombre { get; set; }
+    public List<Establecimientos> Establecimientos { get; set; } = new();
 }

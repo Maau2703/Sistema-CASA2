@@ -1,0 +1,217 @@
+@{
+    ViewData["Title"] = "Entrar";
+    ViewData["Page"] = "login";
+    Layout = "_Layout";
+}
+
+<header class="casa-hero casa-hero--page">
+  <div class="container">
+    <h1>Tu cuenta C.A.S.A.</h1>
+    <p>Con una cuenta puedes pedir una adopción y enviar reportes de animales en la calle.</p>
+  </div>
+</header>
+
+<div class="container casa-overlap">
+  <!-- Ya hay sesión -->
+  <div class="casa-form-card casa-auth-card" id="ya-dentro" hidden>
+    <h2 class="mb-2">Ya iniciaste sesión</h2>
+    <p class="text-muted">Estás conectada como <strong id="yd-nombre"></strong>.</p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn-casa" id="yd-seguir" href="/">Continuar</a>
+      <button class="btn-casa-ghost btn-casa" type="button" id="yd-salir">Salir</button>
+    </div>
+  </div>
+
+  <div class="casa-form-card casa-auth-card" id="tarjeta">
+    <div class="casa-switch" role="tablist" aria-label="Entrar o crear cuenta">
+      <button type="button" class="casa-chip is-active" role="tab" id="tab-entrar" aria-selected="true" aria-controls="form-entrar">Entrar</button>
+      <button type="button" class="casa-chip" role="tab" id="tab-crear" aria-selected="false" aria-controls="form-crear">Crear cuenta</button>
+    </div>
+
+    <!-- Entrar -->
+    <form id="form-entrar" role="tabpanel" aria-labelledby="tab-entrar" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="le-email">Correo electrónico</label>
+        <input class="form-control" id="le-email" type="email" autocomplete="username" required>
+        <div class="invalid-feedback">Escribe un correo válido.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="le-pass">Contraseña</label>
+        <div class="input-group">
+          <input class="form-control" id="le-pass" type="password" autocomplete="current-password" required style="border-radius: 18px 0 0 18px">
+          <button class="btn-casa-ghost btn-casa btn-casa-sm" type="button" data-ver="le-pass" aria-pressed="false" style="border-radius: 0 18px 18px 0; box-shadow:none">Ver</button>
+          <div class="invalid-feedback">Escribe tu contraseña.</div>
+        </div>
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="le-recordar">
+        <label class="form-check-label" for="le-recordar">Mantener la sesión en este equipo</label>
+      </div>
+      <div class="alert alert-danger d-none" id="le-error" role="alert"></div>
+      <button class="btn-casa btn-casa-lg w-100" type="submit" id="le-enviar">Entrar</button>
+    </form>
+
+    <!-- Crear cuenta -->
+    <form id="form-crear" role="tabpanel" aria-labelledby="tab-crear" novalidate hidden>
+      <div class="mb-3">
+        <label class="form-label" for="lc-nombre">Nombre completo</label>
+        <input class="form-control" id="lc-nombre" type="text" maxlength="100" autocomplete="name" required>
+        <div class="invalid-feedback">Escribe tu nombre.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="lc-email">Correo electrónico</label>
+        <input class="form-control" id="lc-email" type="email" autocomplete="email" required>
+        <div class="invalid-feedback">Escribe un correo válido.</div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label class="form-label" for="lc-celular">Celular</label>
+          <input class="form-control" id="lc-celular" type="tel" maxlength="20" autocomplete="tel">
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label" for="lc-ci">Carnet de identidad</label>
+          <input class="form-control" id="lc-ci" type="text" maxlength="20">
+        </div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label class="form-label" for="lc-distrito">Tu distrito</label>
+          <select class="form-select" id="lc-distrito"><option value="">Elige uno</option></select>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label" for="lc-barrio">Tu barrio</label>
+          <input class="form-control" id="lc-barrio" type="text" maxlength="80">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="lc-pass">Contraseña</label>
+        <div class="input-group">
+          <input class="form-control" id="lc-pass" type="password" autocomplete="new-password" minlength="6" required style="border-radius: 18px 0 0 18px">
+          <button class="btn-casa-ghost btn-casa btn-casa-sm" type="button" data-ver="lc-pass" aria-pressed="false" style="border-radius: 0 18px 18px 0; box-shadow:none">Ver</button>
+          <div class="invalid-feedback">Usa al menos 6 caracteres.</div>
+        </div>
+        <div class="form-text">Mínimo 6 caracteres, con mayúscula, minúscula, número y símbolo. Por ejemplo: Casa2026!</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="lc-pass2">Repite la contraseña</label>
+        <input class="form-control" id="lc-pass2" type="password" autocomplete="new-password" required>
+        <div class="invalid-feedback">Las contraseñas no coinciden.</div>
+      </div>
+      <div class="alert alert-danger d-none" id="lc-error" role="alert"></div>
+      <button class="btn-casa btn-casa-lg w-100" type="submit" id="lc-enviar">Crear mi cuenta</button>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  document.addEventListener('DOMContentLoaded', async function () {
+    if (typeof CASA === 'undefined') return;
+    
+    const E = CASA.endpoints, g = CASA.g, esc = CASA.esc;
+    const $ = (id) => document.getElementById(id);
+    const next = new URLSearchParams(location.search).get('next');
+
+    const destino = () => (next ? CASA.auth.safeNext(next) : (CASA.auth.isStaff() ? '/Panel' : '/'));
+
+    /* ---------- Ya hay una sesión ---------- */
+    if (CASA.auth.isLoggedIn()) {
+      $('tarjeta').hidden = true;
+      $('ya-dentro').hidden = false;
+      const u = CASA.auth.getUser();
+      $('yd-nombre').textContent = u.nombre || u.email;
+      $('yd-seguir').href = destino();
+      $('yd-salir').addEventListener('click', () => {
+        CASA.auth.logout();
+        window.location.href = '/';
+      });
+      return;
+    }
+
+    /* ---------- Pestañas Entrar / Crear cuenta ---------- */
+    function mostrar(cual) {
+      const entrar = cual === 'entrar';
+      $('form-entrar').hidden = !entrar;
+      $('form-crear').hidden = entrar;
+      $('tab-entrar').classList.toggle('is-active', entrar);
+      $('tab-crear').classList.toggle('is-active', !entrar);
+      $('tab-entrar').setAttribute('aria-selected', entrar);
+      $('tab-crear').setAttribute('aria-selected', !entrar);
+    }
+    $('tab-entrar').addEventListener('click', () => mostrar('entrar'));
+    $('tab-crear').addEventListener('click', () => mostrar('crear'));
+    if (location.hash === '#crear') mostrar('crear');
+
+    document.querySelectorAll('[data-ver]').forEach((b) => b.addEventListener('click', () => {
+      const input = $(b.dataset.ver);
+      const mostrarClave = input.type === 'password';
+      input.type = mostrarClave ? 'text' : 'password';
+      b.textContent = mostrarClave ? 'Ocultar' : 'Ver';
+      b.setAttribute('aria-pressed', mostrarClave);
+    }));
+
+    // Distritos para el registro
+    try {
+      const lista = await CASA.api.listSoft(E.distritos);
+      lista.forEach((d) =>
+        $('lc-distrito').add(new Option(g(d, 'nombre'), g(d, 'id')))
+      );
+    } catch (e) {
+      console.warn('No se pudieron cargar los distritos');
+    }
+
+    /* ---------- Entrar ---------- */
+    $('form-entrar').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const form = ev.currentTarget;
+      form.classList.add('was-validated');
+      if (!form.checkValidity()) return;
+      
+      const boton = $('le-enviar'), err = $('le-error');
+      boton.disabled = true; err.classList.add('d-none');
+      
+      try {
+        await CASA.auth.login($('le-email').value.trim(), $('le-pass').value, $('le-recordar').checked);
+        window.location.href = destino();
+      } catch (e) {
+        err.textContent = e.message;
+        err.classList.remove('d-none');
+        boton.disabled = false;
+      }
+    });
+
+    /* ---------- Crear cuenta ---------- */
+    const comprobarClaves = () => $('lc-pass2').setCustomValidity($('lc-pass').value === $('lc-pass2').value ? '' : 'No coinciden');
+    $('lc-pass').addEventListener('input', comprobarClaves);
+    $('lc-pass2').addEventListener('input', comprobarClaves);
+
+    $('form-crear').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const form = ev.currentTarget;
+      comprobarClaves();
+      form.classList.add('was-validated');
+      if (!form.checkValidity()) return;
+      
+      const boton = $('lc-enviar'), err = $('lc-error');
+      boton.disabled = true; err.classList.add('d-none');
+      
+      try {
+        await CASA.auth.register({
+          nombre: $('lc-nombre').value.trim(),
+          email: $('lc-email').value.trim(),
+          password: $('lc-pass').value,
+          celular: $('lc-celular').value.trim() || null,
+          ci: $('lc-ci').value.trim() || null,
+          distritoId: $('lc-distrito').value ? Number($('lc-distrito').value) : null,
+          barrio: $('lc-barrio').value.trim() || null
+        });
+        window.location.href = destino();
+      } catch (e) {
+        err.textContent = e.message;
+        err.classList.remove('d-none');
+        boton.disabled = false;
+      }
+    });
+  });
+</script>
+}

@@ -1,0 +1,134 @@
+@{
+    ViewData["Title"] = "Veterinarias y albergues";
+    ViewData["Page"] = "establecimientos";
+    Layout = "_Layout";
+}
+
+<header class="casa-hero casa-hero--page">
+  <div class="container">
+    <h1>Veterinarias y albergues</h1>
+    <p>Encuentra atención para tu mascota o un lugar donde dejar a un animal rescatado.</p>
+  </div>
+</header>
+
+<div class="container casa-overlap">
+  <div class="casa-filters" role="search" aria-label="Filtrar establecimientos">
+    <input class="form-control casa-search" type="search" id="f-texto" placeholder="Buscar por nombre o dirección" aria-label="Buscar establecimientos">
+    <select class="form-select" id="f-distrito" aria-label="Distrito"><option value="">Todos los distritos</option></select>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mt-3" id="chips-tipo" role="group" aria-label="Filtrar por tipo"></div>
+</div>
+
+<section class="container casa-section" aria-live="polite">
+  <p class="fw-bold text-muted mb-3" id="conteo"></p>
+  <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-xl-3" id="grid"></div>
+</section>
+
+@section Scripts {
+<script>
+  document.addEventListener('DOMContentLoaded', async function () {
+    if (typeof CASA === 'undefined') return;
+    const E = CASA.endpoints, g = CASA.g, esc = CASA.esc;
+    const $ = (id) => document.getElementById(id);
+    const grid = $('grid');
+
+    CASA.ui.skeletons(grid, 6, 'col');
+    let lugares = [], tiposById = {}, distritosById = {};
+    try {
+      const [l, t, d] = await Promise.all([
+        CASA.api.list(E.establecimientos),
+        CASA.api.listSoft(E.tiposEstablecimiento),
+        CASA.api.listSoft(E.distritos)
+      ]);
+      lugares = l; tiposById = CASA.byId(t); distritosById = CASA.byId(d);
+    } catch (err) {
+      CASA.ui.error(grid, err, E.establecimientos);
+      return;
+    }
+
+    const tipoDe = (e) => tiposById[g(e, 'tipoEstableciminetoId', 'tipoEstablecimientoId')] || g(e, 'tipoEstableciminetos', 'tipoEstablecimientos');
+    const iconoDe = (tipo) => {
+      const s = CASA.strip(g(tipo, 'nombre'));
+      if (/veterin|clinic/.test(s)) return '🩺';
+      if (/albergue|refugio|hogar/.test(s)) return '🏠';
+      return '🐾';
+    };
+
+    let tipoElegido = '';
+    const tiposUsados = new Map();
+    lugares.forEach((e) => { const t = tipoDe(e); if (t) tiposUsados.set(String(g(t, 'id')), g(t, 'nombre')); });
+    $('chips-tipo').innerHTML = [['', 'Todos'], ...tiposUsados].map(([id, nombre]) =>
+      `<button type="button" class="casa-chip ${id === '' ? 'is-active' : ''}" data-tipo="${esc(id)}" aria-pressed="${id === ''}">${esc(nombre)}</button>`).join('');
+    $('chips-tipo').addEventListener('click', (ev) => {
+      const chip = ev.target.closest('.casa-chip');
+      if (!chip) return;
+      tipoElegido = chip.dataset.tipo;
+      $('chips-tipo').querySelectorAll('.casa-chip').forEach((c) => {
+        c.classList.toggle('is-active', c === chip);
+        c.setAttribute('aria-pressed', c === chip);
+      });
+      render();
+    });
+
+    const distritosUsados = new Map();
+    lugares.forEach((e) => {
+      const d = distritosById[g(e, 'distritoId')] || g(e, 'distritos');
+      if (d) distritosUsados.set(String(g(d, 'id')), g(d, 'nombre'));
+    });
+    distritosUsados.forEach((nombre, id) => $('f-distrito').add(new Option(nombre, id)));
+
+    function card(e) {
+      const tipo = tipoDe(e);
+      const distrito = distritosById[g(e, 'distritoId')] || g(e, 'distritos');
+      const tel = String(g(e, 'telefono') || '');
+      const telHref = tel.replace(/[^\d+]/g, '');
+      const cap = Number(g(e, 'capacidad'));
+      const cal = Number(g(e, 'calificacion'));
+      return `
+        <div class="col"><article class="casa-card">
+          <div class="d-flex gap-3 align-items-start mb-1">
+            <span class="casa-card__icon ${/albergue|refugio|hogar/.test(CASA.strip(g(tipo, 'nombre'))) ? 'casa-card__icon--orange' : ''}" aria-hidden="true">${iconoDe(tipo)}</span>
+            <div class="flex-grow-1">
+              <h3>${esc(g(e, 'nombre') || 'Sin nombre')}</h3>
+              <div class="d-flex flex-wrap gap-2 align-items-center mt-1">
+                <span class="pet-trait">${esc(g(tipo, 'nombre') || 'Establecimiento')}</span>
+                ${g(e, 'estado') ? CASA.badge(g(e, 'estado')) : ''}
+              </div>
+            </div>
+          </div>
+          <ul class="casa-facts">
+            ${g(e, 'direccion') ? `<li><span aria-hidden="true">📍</span><span>${esc(g(e, 'direccion'))}</span></li>` : ''}
+            ${tel ? `<li><span aria-hidden="true">📞</span><a href="tel:${esc(telHref)}">${esc(tel)}</a></li>` : ''}
+            ${g(e, 'horario') ? `<li><span aria-hidden="true">🕒</span><span>${esc(g(e, 'horario'))}</span></li>` : ''}
+            ${cap > 0 ? `<li><span aria-hidden="true">🐕</span><span>Capacidad para ${cap} animales</span></li>` : ''}
+          </ul>
+          <div class="d-flex align-items-center justify-content-between gap-2 mt-3 pt-3" style="border-top:2px dotted var(--casa-line)">
+            <div class="d-flex flex-column gap-1">
+              ${cal > 0 ? `<span>${CASA.stars(cal)} <small class="fw-bold">${cal.toFixed(1)}</small></span>` : '<small class="text-muted">Sin calificación</small>'}
+              ${distrito ? CASA.districtHtml(distrito) : ''}
+            </div>
+            <a class="btn-casa-blue btn-casa btn-casa-sm" href="/Mapa?establecimiento=${encodeURIComponent(g(e, 'id'))}">Ver en el mapa</a>
+          </div>
+        </article></div>`;
+    }
+
+    function render() {
+      const q = CASA.strip($('f-texto').value), dist = $('f-distrito').value;
+      const lista = lugares
+        .filter((e) => !tipoElegido || String(g(tipoDe(e), 'id')) === tipoElegido)
+        .filter((e) => !dist || String(g(e, 'distritoId')) === dist)
+        .filter((e) => !q || CASA.strip(`${g(e, 'nombre')} ${g(e, 'direccion')}`).includes(q));
+
+      $('conteo').textContent = lista.length === 1 ? '1 lugar encontrado' : `${lista.length} lugares encontrados`;
+      if (!lista.length) {
+        CASA.ui.empty(grid, '🔍', 'No encontramos lugares con esos filtros', 'Prueba con otro distrito, tipo o palabra.');
+        return;
+      }
+      grid.innerHTML = lista.map(card).join('');
+    }
+    $('f-texto').addEventListener('input', render);
+    $('f-distrito').addEventListener('change', render);
+    render();
+  });
+</script>
+}

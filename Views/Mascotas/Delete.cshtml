@@ -1,0 +1,54 @@
+@model Proyecto.Models.Mascotas
+@{
+    ViewData["Title"] = "Eliminar Mascota";
+    ViewData["Page"] = "mascotas";
+    Layout = "_Layout";
+}
+
+<header class="casa-hero casa-hero--page">
+  <div class="container">
+    <h1>Eliminar mascota</h1>
+    <p>¿Estás seguro de que deseas eliminar este registro?</p>
+  </div>
+</header>
+
+<div class="container casa-overlap">
+  <div class="casa-form-card" style="max-width: 600px; margin: 0 auto;">
+    <div class="alert alert-danger">
+      <h4 class="alert-heading">⚠️ Acción irreversible</h4>
+      <p>Esta acción no se puede deshacer. La mascota será eliminada permanentemente del sistema.</p>
+    </div>
+
+    <dl class="row mb-4">
+      <dt class="col-sm-4">Nombre</dt>
+      <dd class="col-sm-8">@Model.Nombre</dd>
+      
+      <dt class="col-sm-4">Especie</dt>
+      <dd class="col-sm-8">@Model.Especie</dd>
+      
+      <dt class="col-sm-4">Edad</dt>
+      <dd class="col-sm-8">@Model.Edad</dd>
+      
+      <dt class="col-sm-4">Tamaño</dt>
+      <dd class="col-sm-8">@Model.Tamaño</dd>
+      
+      <dt class="col-sm-4">Color</dt>
+      <dd class="col-sm-8">@Model.Color</dd>
+      
+      <dt class="col-sm-4">Estado</dt>
+      <dd class="col-sm-8">@Model.Estado</dd>
+      
+      <dt class="col-sm-4">Distrito</dt>
+      <dd class="col-sm-8">@Model.Distritos?.nombre</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+      @Html.AntiForgeryToken()
+      <input type="hidden" asp-for="Id" />
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger btn-lg">🗑️ Sí, eliminar</button>
+        <a class="btn btn-casa-ghost btn-casa btn-lg" href="/Mascotas">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>

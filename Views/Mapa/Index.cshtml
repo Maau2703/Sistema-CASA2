@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Mapa de Sucre";
+    ViewData["Page"] = "mapa";
+    Layout = "_Layout";
+}
+
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" crossorigin="anonymous">
+
+<header class="casa-hero casa-hero--page">
+  <div class="container">
+    <h1>Mapa de Sucre</h1>
+    <p>Cada distrito tiene su cinta de color. Toca una zona o un pin para ver más.</p>
+  </div>
+</header>
+
+<div class="container casa-overlap">
+  <div id="map-status"></div>
+  <div class="row g-4">
+    <div class="col-lg-9 order-lg-2">
+      <div class="casa-map-shell">
+        <div id="map" role="application" aria-label="Mapa de distritos y establecimientos de Sucre"></div>
+      </div>
+    </div>
+
+    <aside class="col-lg-3 order-lg-1">
+      <div class="casa-map-legend">
+        <h3>Capas</h3>
+        <div class="form-check form-switch mb-1">
+          <input class="form-check-input" type="checkbox" role="switch" id="t-distritos" checked>
+          <label class="form-check-label fw-bold" for="t-distritos">Distritos</label>
+        </div>
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" role="switch" id="t-lugares" checked>
+          <label class="form-check-label fw-bold" for="t-lugares">Veterinarias y albergues</label>
+        </div>
+
+        <h3>Distritos</h3>
+        <div id="leyenda" aria-live="polite"><div class="casa-skeleton" style="min-height:120px" aria-hidden="true"></div></div>
+
+        <hr>
+        <div class="d-flex flex-column gap-2 small fw-bold">
+          <span class="d-flex align-items-center gap-2"><span class="casa-pin" style="width:26px;height:26px;font-size:13px"><span>🩺</span></span> Veterinaria</span>
+          <span class="d-flex align-items-center gap-2"><span class="casa-pin casa-pin--blue" style="width:26px;height:26px;font-size:13px"><span>🏠</span></span> Albergue</span>
+        </div>
+        <p class="small text-muted mt-3 mb-0" id="nota-mapa">Límites oficiales de los distritos urbanos de Sucre.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+@section Scripts {
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async function () {
+    if (typeof CASA === 'undefined') return;
+    const g = CASA.g, esc = CASA.esc;
+    const $ = (id) => document.getElementById(id);
+
+    const map = L.map('map').setView([CASA.SUCRE.lat, CASA.SUCRE.lng], CASA.SUCRE.zoom);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    const capaDistritos = L.featureGroup().addTo(map);
+    const capaLugares = L.featureGroup().addTo(map);
+
+    const colorMap = {
+      'Naranja': '#fd7e14', 'Azul': '#0d6efd', 'Verde': '#198754',
+      'Amarillo':'#ffc107', 'Rojo': '#dc3545'
+    };
+
+    try {
+      const resGeo = await fetch('/data/distritos.json');
+      if (!resGeo.ok) throw new Error('No se pudo cargar el archivo distritos.json');
+      const geojsonFeatureCollection = await resGeo.json();
+
+      let lugares = [];
+      try {
+        const resEst = await fetch(CASA.endpoints.establecimientos);
+        if (resEst.ok) lugares = await resEst.json();
+      } catch (e) { console.warn('No se pudieron cargar establecimientos', e); }
+
+      const poligonosMap = new Map();
+      const filasLeyenda = [];
+
+      L.geoJSON(geojsonFeatureCollection, {
+        style: function (feature) {
+          const props = feature.properties || {};
+          const colorNombre = props.colorCinta || 'Azul';
+          const colorHex = colorMap[colorNombre] || '#0d6efd';
+          return { color: colorHex, weight: 3, fillColor: colorHex, fillOpacity: 0.25 };
+        },
+        onEachFeature: function (feature, layer) {
+          const props = feature.properties || {};
+          const id = props.id;
+          const nombre = props.nombre || 'Distrito';
+          const cinta = props.colorCinta || '—';
+
+          poligonosMap.set(String(id), layer);
+          const nLugares = lugares.filter(e => g(e, 'distritoId') === id).length;
+
+          layer.bindTooltip(esc(nombre), { sticky: true });
+          layer.bindPopup(`
+            <div class="p-1">
+              <h4 class="fw-bold mb-1">${esc(nombre)}</h4>
+              <div>🎀 Cinta: ${esc(cinta)}</div>
+              <div>🩺 ${nLugares} establecimientos registrados</div>
+              <span class="badge bg-primary mt-1">Distrito Urbano</span>
+            </div>
+          `);
+
+          filasLeyenda.push({ id, nombre, color: colorMap[cinta] || '#0d6efd', nLugares });
+        }
+      }).addTo(capaDistritos);
+
+      $('leyenda').innerHTML = filasLeyenda.length
+        ? filasLeyenda.map((f) => `
+            <button type="button" class="casa-legend-item" data-id="${esc(f.id)}">
+              <span class="casa-legend-swatch" style="--ribbon:${esc(f.color)}"></span>
+              <span>${esc(f.nombre)}</span>
+              <span class="count">${f.nLugares}</span>
+            </button>`).join('')
+        : '<p class="small text-muted mb-0">Aún no hay distritos registrados.</p>';
+
+      $('leyenda').addEventListener('click', (ev) => {
+        const b = ev.target.closest('.casa-legend-item');
+        if (!b) return;
+        const capa = poligonosMap.get(b.dataset.id);
+        if (capa) {
+          map.fitBounds(capa.getBounds(), { padding: [30, 30] });
+          capa.openPopup();
+        }
+      });
+
+      if (capaDistritos.getLayers().length) {
+        map.fitBounds(capaDistritos.getBounds(), { padding: [30, 30] });
+      }
+
+    } catch (err) {
+      console.error('Error cargando el mapa GeoJSON:', err);
+      CASA.ui.error($('map-status'), err, '/data/distritos.json', 'mb-4');
+      $('leyenda').innerHTML = '<p class="small text-muted">Error al cargar los límites del mapa.</p>';
+    }
+
+    $('t-distritos').addEventListener('change', (ev) => ev.target.checked ? capaDistritos.addTo(map) : map.removeLayer(capaDistritos));
+    $('t-lugares').addEventListener('change', (ev) => ev.target.checked ? capaLugares.addTo(map) : map.removeLayer(capaLugares));
+  });
+</script>
+}

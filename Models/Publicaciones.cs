@@ -8,7 +8,7 @@ public class Publicaciones
     public DateTime fecha {get;set;}
     //relaciones 
     public int UsuarioId {get;set;}
-    public List<Usuarios> Usuarios {get;set;} = new List<Usuarios>;
+    public Usuarios Usuario { get; set; }
     public int MascotaId {get;set;}
     public Mascotas Mascotas {get;set;}
 }

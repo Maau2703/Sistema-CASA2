@@ -1,0 +1,191 @@
+@{
+    ViewData["Title"] = "Mascotas en adopción";
+    ViewData["Page"] = "mascotas";
+    Layout = "_Layout";
+    
+    var mascotas = ViewBag.Mascotas as List<Proyecto.Models.Mascotas> ?? new List<Proyecto.Models.Mascotas>();
+    var distritos = ViewBag.Distritos as List<Proyecto.Models.Distritos> ?? new List<Proyecto.Models.Distritos>();
+    
+    var distritosDict = new Dictionary<int, Proyecto.Models.Distritos>();
+    if (distritos != null)
+    {
+        foreach (var d in distritos)
+        {
+            if (d != null) distritosDict[d.Id] = d;
+        }
+    }
+}
+
+<header class="casa-hero casa-hero--page">
+  <div class="container">
+    <h1>Mascotas en adopción</h1>
+    <p>Cada una tiene su historia. Filtra por especie, tamaño o distrito y conoce a tu próximo compañero.</p>
+    <a class="btn btn-casa btn-casa-sm mt-3 d-none" id="btn-crear-mascota" href="/Mascotas/Create">➕ Registrar nueva mascota</a>
+  </div>
+</header>
+
+<div class="container casa-overlap">
+  @if (TempData["Success"] != null)
+  {
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+      @TempData["Success"]
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  }
+
+  <form class="casa-filters" id="filtros" role="search" onsubmit="return false">
+    <input class="form-control casa-search" type="search" id="f-texto" placeholder="Buscar por nombre, color o característica">
+    <select class="form-select" id="f-especie"><option value="">Todas las especies</option></select>
+    <select class="form-select" id="f-tamano"><option value="">Todos los tamaños</option></select>
+    <select class="form-select" id="f-estado"><option value="">Todos los estados</option></select>
+    <select class="form-select" id="f-distrito"><option value="">Todos los distritos</option></select>
+  </form>
+</div>
+
+<section class="container casa-section" aria-live="polite">
+  <p class="fw-bold text-muted mb-3" id="conteo">@mascotas.Count mascotas registradas</p>
+  <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-xl-3" id="grid">
+    @foreach (var m in mascotas)
+    {
+      if (m == null) continue;
+
+      var distrito = distritosDict.ContainsKey(m.DistritoId) ? distritosDict[m.DistritoId] : null;
+      var ribbonColor = distrito?.ColorCinta switch
+      {
+        "Naranja" => "#FF7A00", "Azul" => "#0B47C9", "Verde" => "#2E9E5B",
+        "Amarillo" => "#F6C21A", "Rojo" => "#E5384F", _ => "#FF7A00"
+      };
+      
+      var especieLower = (m.Especie ?? "").ToLower();
+      var emoji = especieLower switch
+      {
+        var s when s.Contains("perr") || s.Contains("can") => "🐶",
+        var s when s.Contains("gat") || s.Contains("fel") => "🐱",
+        var s when s.Contains("conej") => "🐰",
+        var s when s.Contains("ave") || s.Contains("pajar") => "🐦",
+        _ => "🐾"
+      };
+      
+      var estadoLower = (m.Estado ?? "").ToLower();
+      var estadoClass = estadoLower switch
+      {
+        var s when s.Contains("disponible") || s.Contains("adopcion") => "is-ok",
+        var s when s.Contains("adoptad") => "is-done",
+        var s when s.Contains("pendiente") || s.Contains("rescate") => "is-wait",
+        var s when s.Contains("no disponible") || s.Contains("fallec") => "is-bad",
+        _ => "is-neutral"
+      };
+      
+      <div class="col mascota-card" 
+           data-especie="@(m.Especie ?? "")" 
+           data-tamano="@(m.Tamaño ?? "")" 
+           data-estado="@(m.Estado ?? "")" 
+           data-distrito="@m.DistritoId" 
+           data-nombre="@(m.Nombre ?? "")" 
+           data-color="@(m.Color ?? "")">
+        <article class="pet-card" style="--ribbon:@ribbonColor">
+          <div class="pet-card__photo">
+            <div class="pet-card__fallback">@emoji</div>
+            @if (!string.IsNullOrEmpty(m.Foto))
+            {
+              <img src="@m.Foto" alt="Foto de @(m.Nombre ?? "Mascota")" loading="lazy" data-fallback>
+            }
+            <span class="pet-card__status"><span class="casa-badge @estadoClass">@(m.Estado ?? "Sin estado")</span></span>
+            <span class="pet-card__ribbon"></span>
+          </div>
+          <div class="pet-card__body">
+            <h3 class="pet-tag">@(m.Nombre ?? "Sin nombre")</h3>
+            <div class="pet-card__meta">
+              @if (!string.IsNullOrEmpty(m.Especie)) { <span class="pet-trait">@emoji @m.Especie</span> }
+              @if (!string.IsNullOrEmpty(m.Edad)) { <span class="pet-trait">🎂 @m.Edad</span> }
+              @if (!string.IsNullOrEmpty(m.Tamaño)) { <span class="pet-trait">📏 @m.Tamaño</span> }
+              @if (!string.IsNullOrEmpty(m.Color)) { <span class="pet-trait">🎨 @m.Color</span> }
+            </div>
+            <p class="pet-card__desc">@(m.Caracteristica ?? "Sin descripción")</p>
+            <div class="pet-card__foot">
+              @if (distrito != null)
+              {
+                <span class="pet-card__district"><span class="ribbon-dot" style="--ribbon:@ribbonColor"></span>@distrito.nombre</span>
+              }
+              <div class="d-flex gap-1 d-none crud-buttons" data-id="@m.Id">
+                <a class="btn btn-casa-ghost btn-casa-sm edit-btn" href="/Mascotas/Edit/@m.Id" title="Editar">✏️</a>
+                <a class="btn btn-casa-ghost btn-casa-sm text-danger delete-btn" href="/Mascotas/Delete/@m.Id" title="Eliminar">🗑️</a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    }
+  </div>
+</section>
+
+@section Scripts {
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const userStr = localStorage.getItem('casa.user');
+    let user = null;
+    try { user = userStr ? JSON.parse(userStr) : null; } catch(e) {}
+
+    const rol = (user?.rol || user?.Rol || '').toLowerCase();
+    const esAdmin = rol === 'administrador';
+    const esRescatista = rol === 'rescatista';
+    const puedeEditar = esAdmin || esRescatista;
+
+    if (puedeEditar) {
+      const btnCrear = document.getElementById('btn-crear-mascota');
+      if (btnCrear) btnCrear.classList.remove('d-none');
+    }
+
+    document.querySelectorAll('.crud-buttons').forEach(container => {
+      const deleteBtn = container.querySelector('.delete-btn');
+      if (esAdmin) {
+        container.classList.remove('d-none');
+      } else if (esRescatista) {
+        container.classList.remove('d-none');
+        if (deleteBtn) deleteBtn.remove();
+      }
+    });
+
+    const cards = document.querySelectorAll('.mascota-card');
+    const fill = (id, dataAttr) => {
+      const sel = document.getElementById(id);
+      const values = [...new Set([...cards].map(c => c.dataset[dataAttr]).filter(Boolean))].sort();
+      values.forEach(v => sel.add(new Option(v, v)));
+    };
+    fill('f-especie', 'especie');
+    fill('f-tamano', 'tamano');
+    fill('f-estado', 'estado');
+    const distSel = document.getElementById('f-distrito');
+    
+    @foreach(var d in (distritos ?? new List<Proyecto.Models.Distritos>()))
+    {
+      if (d != null) {
+        @:distSel.add(new Option('@d.nombre', '@d.Id'));
+      }
+    }
+
+    const val = id => document.getElementById(id).value.toLowerCase();
+    const filter = () => {
+      const q = val('f-texto');
+      let count = 0;
+      cards.forEach(c => {
+        const match = 
+          (!val('f-especie') || c.dataset.especie.toLowerCase() === val('f-especie')) &&
+          (!val('f-tamano') || c.dataset.tamano.toLowerCase() === val('f-tamano')) &&
+          (!val('f-estado') || c.dataset.estado.toLowerCase() === val('f-estado')) &&
+          (!val('f-distrito') || c.dataset.distrito === val('f-distrito')) &&
+          (!q || (c.dataset.nombre + ' ' + c.dataset.color).toLowerCase().includes(q));
+        c.style.display = match ? '' : 'none';
+        if (match) count++;
+      });
+      document.getElementById('conteo').textContent = count + ' mascota' + (count !== 1 ? 's' : '') + ' encontrada' + (count !== 1 ? 's' : '');
+    };
+    
+    ['f-texto','f-especie','f-tamano','f-estado','f-distrito'].forEach(id => {
+      document.getElementById(id).addEventListener('input', filter);
+    });
+    
+    filter();
+  });
+</script>
+}

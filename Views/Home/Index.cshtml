@@ -1,0 +1,121 @@
+@{
+    ViewData["Title"] = "Inicio";
+    ViewData["Page"] = "index";
+    Layout = "_Layout";
+}
+
+<!-- Bienvenida -->
+<header class="casa-hero">
+  <div class="container">
+    <span class="casa-hero__stat mb-3"><strong id="hero-count">—</strong> mascotas esperando hogar</span>
+    <h1 class="mb-3">Un hogar para cada patita de Sucre</h1>
+    <p class="lead mb-4">Conoce a las mascotas que buscan familia, avisa si ves un animal en la calle y encuentra veterinarias y albergues cerca de ti.</p>
+    <div class="d-flex flex-wrap gap-3">
+      <a class="btn-casa btn-casa-lg" href="/Mascotas">🐶 Ver mascotas</a>
+      <a class="btn-casa btn-casa-ghost btn-casa-lg" href="/Reportes">Reportar un animal</a>
+    </div>
+  </div>
+</header>
+
+<!-- Accesos directos -->
+<section class="container casa-overlap" aria-labelledby="accesos-titulo">
+  <h2 id="accesos-titulo" class="visually-hidden">Accesos directos</h2>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-5 g-3">
+    <div class="col"><a class="casa-quick" href="/Mascotas">
+      <span class="casa-quick__icon" aria-hidden="true">🐶</span><h3>Mascotas</h3><p>Conoce y adopta.</p></a></div>
+    <div class="col"><a class="casa-quick" href="/Reportes">
+      <span class="casa-quick__icon" aria-hidden="true"></span><h3>Reportes</h3><p>Avisa de un animal perdido o abandonado.</p></a></div>
+    <div class="col"><a class="casa-quick" href="/Adopciones">
+      <span class="casa-quick__icon" aria-hidden="true"></span><h3>Adopciones</h3><p>Solicitudes y contratos.</p></a></div>
+    <div class="col"><a class="casa-quick" href="/Establecimientos">
+      <span class="casa-quick__icon" aria-hidden="true">🩺</span><h3>Veterinarias y albergues</h3><p>Teléfonos y horarios.</p></a></div>
+    <div class="col"><a class="casa-quick" href="/Mapa">
+      <span class="casa-quick__icon" aria-hidden="true">🗺️</span><h3>Mapa</h3><p>Distritos y lugares cercanos.</p></a></div>
+  </div>
+</section>
+
+<!-- Cifras -->
+<section class="container casa-section pb-0" aria-label="Cifras del proyecto">
+  <div class="row row-cols-2 row-cols-md-4 g-3">
+    <div class="col"><div class="casa-counter"><strong id="c-mascotas">—</strong><span>Mascotas registradas</span></div></div>
+    <div class="col"><div class="casa-counter"><strong id="c-reportes">—</strong><span>Reportes recibidos</span></div></div>
+    <div class="col"><div class="casa-counter"><strong id="c-establecimientos">—</strong><span>Veterinarias y albergues</span></div></div>
+    <div class="col"><div class="casa-counter"><strong id="c-distritos">—</strong><span>Distritos</span></div></div>
+  </div>
+</section>
+
+<!-- Quiénes buscan hogar -->
+<section class="container casa-section" aria-labelledby="destacadas-titulo">
+  <div class="casa-section-title">
+    <h2 id="destacadas-titulo" class="mb-0">Buscan hogar ahora</h2>
+    <a class="btn-casa-ghost btn-casa btn-casa-sm" href="/Mascotas">Ver todas</a>
+  </div>
+  <div class="row g-4" id="destacadas"></div>
+</section>
+
+<!-- Llamada a la acción -->
+<section class="container">
+  <div class="casa-cta">
+    <div class="row align-items-center g-3">
+      <div class="col-lg-8">
+        <h2>¿Viste un animal que necesita ayuda?</h2>
+        <p class="mb-0">Cuéntanos dónde está y cómo se ve. El equipo de rescate revisa cada reporte.</p>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <a class="btn-casa-blue btn-casa btn-casa-lg" href="/Reportes">Hacer un reporte</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+@section Scripts {
+<script>
+  (async function () {
+    if (typeof CASA === 'undefined') return;
+    
+    const E = CASA.endpoints;
+    const grid = document.getElementById('destacadas');
+    CASA.ui.skeletons(grid, 3, 'col-12 col-md-6 col-lg-4');
+
+    const [mascotas, reportes, establecimientos, distritos] = await Promise.allSettled([
+      CASA.api.list(E.mascotas),
+      CASA.api.list(E.reportes),
+      CASA.api.list(E.establecimientos),
+      CASA.api.list(E.distritos)
+    ]);
+
+    const setCount = (id, result) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = result.status === 'fulfilled' ? result.value.length : '—';
+      }
+    };
+    setCount('c-mascotas', mascotas);
+    setCount('c-reportes', reportes);
+    setCount('c-establecimientos', establecimientos);
+    setCount('c-distritos', distritos);
+
+    if (mascotas.status !== 'fulfilled') {
+      CASA.ui.error(grid, mascotas.reason, E.mascotas);
+      return;
+    }
+
+    const disponibles = mascotas.value.filter((m) => CASA.estadoClass(CASA.g(m, 'estado')) === 'is-ok');
+    const heroCount = document.getElementById('hero-count');
+    if (heroCount) {
+      heroCount.textContent = disponibles.length;
+    }
+
+    if (!disponibles.length) {
+      CASA.ui.empty(grid, '🐾', 'Todavía no hay mascotas disponibles',
+        'Cuando se registren nuevas mascotas en adopción aparecerán aquí.');
+      return;
+    }
+
+    const dById = distritos.status === 'fulfilled' ? CASA.byId(distritos.value) : {};
+    grid.innerHTML = disponibles.slice(0, 3)
+      .map((m) => `<div class="col-12 col-md-6 col-lg-4">${CASA.petCard(m, dById)}</div>`).join('');
+    CASA.ui.done(grid);
+  })();
+</script>
+}

@@ -1,0 +1,115 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 1,
+        "nombre": "Distrito 1",
+        "colorCinta": "Naranja",
+        "areaHa": 232.82
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-65.2620, -19.0430],
+            [-65.2570, -19.0390],
+            [-65.2530, -19.0420],
+            [-65.2560, -19.0470],
+            [-65.2600, -19.0480],
+            [-65.2620, -19.0430]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 2,
+        "nombre": "Distrito 2",
+        "colorCinta": "Azul",
+        "areaHa": 1114.78
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-65.2570, -19.0390],
+            [-65.2480, -19.0300],
+            [-65.2420, -19.0360],
+            [-65.2500, -19.0420],
+            [-65.2530, -19.0420],
+            [-65.2570, -19.0390]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 3,
+        "nombre": "Distrito 3",
+        "colorCinta": "Verde",
+        "areaHa": 2624.31
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-65.2750, -19.0250],
+            [-65.2580, -19.0180],
+            [-65.2480, -19.0300],
+            [-65.2570, -19.0390],
+            [-65.2710, -19.0330],
+            [-65.2750, -19.0250]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 4,
+        "nombre": "Distrito 4",
+        "colorCinta": "Amarillo",
+        "areaHa": 1811.88
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-65.2900, -19.0350],
+            [-65.2750, -19.0250],
+            [-65.2710, -19.0330],
+            [-65.2620, -19.0430],
+            [-65.2800, -19.0500],
+            [-65.2900, -19.0350]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 5,
+        "nombre": "Distrito 5",
+        "colorCinta": "Rojo",
+        "areaHa": 1494.74
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-65.2500, -19.0420],
+            [-65.2420, -19.0360],
+            [-65.2350, -19.0450],
+            [-65.2450, -19.0580],
+            [-65.2550, -19.0520],
+            [-65.2500, -19.0420]
+          ]
+        ]
+      }
+    }
+  ]
+}

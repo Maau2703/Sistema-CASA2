@@ -1,0 +1,110 @@
+@model Proyecto.Models.Mascotas
+@{
+    ViewData["Title"] = "Editar Mascota";
+    ViewData["Page"] = "mascotas";
+    Layout = "_Layout";
+    var distritos = ViewBag.Distritos as List<Proyecto.Models.Distritos>;
+}
+
+<header class="casa-hero casa-hero--page">
+  <div class="container">
+    <h1>Editar mascota</h1>
+    <p>Actualiza la información de @Model.Nombre</p>
+  </div>
+</header>
+
+<div class="container casa-overlap">
+  <div class="casa-form-card" style="max-width: 700px; margin: 0 auto;">
+    <h2 class="mb-4">Datos de la mascota</h2>
+    <form asp-action="Edit" method="post" novalidate>
+      @Html.AntiForgeryToken()
+      <input type="hidden" asp-for="Id" />
+      
+      <div class="mb-3">
+        <label asp-for="Nombre" class="form-label">Nombre *</label>
+        <input asp-for="Nombre" class="form-control" required>
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label asp-for="Especie" class="form-label">Especie *</label>
+          <select asp-for="Especie" class="form-select" required>
+            <option value="">Selecciona...</option>
+            <option>Perro</option>
+            <option>Gato</option>
+            <option>Conejo</option>
+            <option>Ave</option>
+            <option>Otro</option>
+          </select>
+          <span asp-validation-for="Especie" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+          <label asp-for="Edad" class="form-label">Edad aproximada *</label>
+          <input asp-for="Edad" class="form-control" required>
+          <span asp-validation-for="Edad" class="text-danger"></span>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label asp-for="Tamaño" class="form-label">Tamaño *</label>
+          <select asp-for="Tamaño" class="form-select" required>
+            <option value="">Selecciona...</option>
+            <option>Pequeño</option>
+            <option>Mediano</option>
+            <option>Grande</option>
+          </select>
+          <span asp-validation-for="Tamaño" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+          <label asp-for="Color" class="form-label">Color *</label>
+          <input asp-for="Color" class="form-control" required>
+          <span asp-validation-for="Color" class="text-danger"></span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label asp-for="Estado" class="form-label">Estado *</label>
+        <select asp-for="Estado" class="form-select" required>
+          <option>En calle</option>
+          <option>Rescatado</option>
+          <option>En adopción</option>
+          <option>Adoptado</option>
+        </select>
+        <span asp-validation-for="Estado" class="text-danger"></span>
+      </div>
+
+      <div class="mb-3">
+        <label asp-for="Caracteristica" class="form-label">Características / Descripción</label>
+        <textarea asp-for="Caracteristica" class="form-control" rows="3"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label asp-for="Foto" class="form-label">URL de la foto</label>
+        <input asp-for="Foto" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label asp-for="DistritoId" class="form-label">Distrito *</label>
+        <select asp-for="DistritoId" class="form-select" required>
+          <option value="">Selecciona un distrito...</option>
+          @foreach (var d in distritos)
+          {
+            <option value="@d.Id">@d.nombre</option>
+          }
+        </select>
+        <span asp-validation-for="DistritoId" class="text-danger"></span>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-casa btn-casa-lg">💾 Guardar cambios</button>
+        <a class="btn btn-casa-ghost btn-casa btn-casa-lg" href="/Mascotas">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+}
