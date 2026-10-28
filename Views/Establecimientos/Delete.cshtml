@@ -1,0 +1,57 @@
+@model Proyecto.Models.Establecimientos
+@{
+    ViewData["Title"] = "Eliminar Establecimiento";
+    ViewData["Page"] = "establecimientos";
+    Layout = "_Layout";
+}
+
+<header class="casa-hero casa-hero--page">
+  <div class="container">
+    <h1>Eliminar Establecimiento</h1>
+    <p>¿Estás seguro de que deseas eliminar este registro?</p>
+  </div>
+</header>
+
+<div class="container casa-overlap">
+  <div class="casa-form-card" style="max-width: 600px; margin: 0 auto;">
+    <div class="alert alert-danger">
+      <h4 class="alert-heading">⚠️ Acción irreversible</h4>
+      <p>Esta acción no se puede deshacer. El establecimiento será eliminado permanentemente del sistema.</p>
+    </div>
+
+    <dl class="row mb-4">
+      <dt class="col-sm-4">Nombre</dt>
+      <dd class="col-sm-8">@Model.nombre</dd>
+      
+      <dt class="col-sm-4">Tipo</dt>
+      <dd class="col-sm-8">@(Model.TipoEstablecimiento?.nombre ?? "Sin tipo")</dd>
+      
+      <dt class="col-sm-4">Distrito</dt>
+      <dd class="col-sm-8">@(Model.Distritos?.nombre ?? "Sin distrito")</dd>
+      
+      <dt class="col-sm-4">Dirección</dt>
+      <dd class="col-sm-8">@Model.direccion</dd>
+      
+      <dt class="col-sm-4">Teléfono</dt>
+      <dd class="col-sm-8">@(Model.telefono ?? "No registrado")</dd>
+      
+      <dt class="col-sm-4">Horario</dt>
+      <dd class="col-sm-8">@(Model.horario ?? "No registrado")</dd>
+      
+      <dt class="col-sm-4">Capacidad</dt>
+      <dd class="col-sm-8">@Model.capacidad</dd>
+      
+      <dt class="col-sm-4">Estado</dt>
+      <dd class="col-sm-8">@Model.estado</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="id" value="@Model.Id" />
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger btn-lg">🗑️ Sí, eliminar</button>
+        <a class="btn btn-casa-ghost btn-casa btn-lg" href="/Establecimientos">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>

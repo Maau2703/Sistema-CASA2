@@ -1,246 +1,69 @@
-@{
-    ViewData["Title"] = "Reportes de animales";
-    ViewData["Page"] = "reportes";
-    Layout = "_Layout";
+@{ 
+    ViewData["Title"] = "Reportes de Animales"; 
+    Layout = "_Layout"; 
+    var reportes = ViewBag.Reportes as List<Proyecto.Models.Reportes>; 
 }
 
 <header class="casa-hero casa-hero--page">
-  <div class="container">
-    <h1>Reportes de animales</h1>
-    <p>¿Viste un animal perdido o abandonado? Cuéntanos dónde y cómo está. Revisamos cada aviso.</p>
-  </div>
+    <div class="container">
+        <h1>Reportes de Animales</h1>
+        <p>¿Viste un animal perdido o abandonado? Cuéntanos.</p>
+        <a class="btn btn-casa btn-casa-sm mt-3" href="/Reportes/Create">➕ Nuevo reporte</a>
+    </div>
 </header>
 
 <div class="container casa-overlap">
-  <div class="row g-4">
-    <div class="col-lg-5">
-      <form class="casa-form-card" id="formReporte" novalidate>
-        <h2 class="mb-3">Nuevo reporte</h2>
-
-        <div class="mb-3">
-          <label class="form-label" for="r-tipo">¿Qué quieres reportar?</label>
-          <select class="form-select" id="r-tipo" required><option value="">Cargando tipos…</option></select>
-          <div class="invalid-feedback">Elige un tipo de reporte.</div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="r-ubicacion">¿Dónde está?</label>
-          <div class="input-group">
-            <input class="form-control" id="r-ubicacion" type="text" maxlength="200" required
-                   placeholder="Calle, barrio o punto de referencia" style="border-radius: 18px 0 0 18px">
-            <button class="btn-casa-ghost btn-casa btn-casa-sm" type="button" id="btn-geo" style="border-radius: 0 18px 18px 0; box-shadow:none">📍 Usar mi ubicación</button>
-            <div class="invalid-feedback">Indica dónde está el animal.</div>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="r-desc">¿Cómo se ve y qué pasó?</label>
-          <textarea class="form-control" id="r-desc" rows="4" minlength="10" maxlength="500" required
-                    placeholder="Perro mediano, pelaje marrón, parece herido en una pata."></textarea>
-          <div class="invalid-feedback">Escribe al menos 10 caracteres.</div>
-        </div>
-
-        <div class="row g-3 mb-3">
-          <div class="col-sm-7">
-            <label class="form-label" for="r-fecha">Fecha y hora</label>
-            <input class="form-control" id="r-fecha" type="datetime-local" required>
-          </div>
-          <div class="col-sm-5">
-            <label class="form-label" for="r-ciudadano">Tu número de ciudadano</label>
-            <input class="form-control" id="r-ciudadano" type="number" min="1" required>
-            <div class="invalid-feedback">Obligatorio.</div>
-          </div>
-        </div>
-
-        <div class="mb-3 d-none" id="grp-rescatista">
-          <label class="form-label" for="r-rescatista">Rescatista (opcional)</label>
-          <select class="form-select" id="r-rescatista"><option value="">Que lo asigne el equipo</option></select>
-        </div>
-
-        <fieldset class="mb-3 d-none" id="grp-denuncia">
-          <legend class="fs-6 fw-bold">Denuncia de abandono (opcional)</legend>
-          <div class="mb-2">
-            <label class="form-label" for="r-denunciado">¿Quién abandonó al animal?</label>
-            <input class="form-control" id="r-denunciado" type="text" maxlength="150" placeholder="Nombre o datos de la persona, si los conoces">
-          </div>
-          <div>
-            <label class="form-label" for="r-evidencia">Evidencia</label>
-            <input class="form-control" id="r-evidencia" type="text" maxlength="300" placeholder="Enlace a una foto o video">
-          </div>
-        </fieldset>
-
-        <div class="alert alert-danger d-none" id="r-error" role="alert"></div>
-        <button class="btn-casa btn-casa-lg w-100" type="submit" id="r-enviar">Enviar reporte</button>
-      </form>
+    @if(TempData["Success"] != null) {
+        <div class="alert alert-success mt-3">@TempData["Success"]</div>
+    }
+    
+    <div class="row g-4 mt-2">
+        @if(reportes != null && reportes.Any()) {
+            @foreach(var r in reportes) {
+                <div class="col-md-6 col-lg-4">
+                    <div class="casa-card h-100">
+                        <div class="casa-card__body">
+                            @if(!string.IsNullOrEmpty(r.ImagenUrl)) {
+                                <div class="mb-3 text-center">
+                                    <img src="@r.ImagenUrl" alt="Foto del reporte" class="img-fluid rounded"
+                                         style="max-height: 250px; object-fit: cover; width: 100%;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div class="alert alert-secondary" style="display:none;">📷 Sin imagen disponible</div>
+                                </div>
+                            } else {
+                                <div class="mb-3 text-center">
+                                    <div class="alert alert-secondary">📷 Sin imagen</div>
+                                </div>
+                            }
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <h5 class="mb-0 fw-bold">@r.TipoReporte?.nombre</h5>
+                                <span class="badge bg-warning text-dark">@r.estado</span>
+                            </div>
+                            
+                            <div class="mb-2"><small class="text-muted">📍 @r.Ubicaion</small></div>
+                            <div class="mb-2"><small class="text-muted">📅 @r.Fecha.ToString("dd/MM/yyyy")</small></div>
+                            <p class="small text-muted mb-3">@r.Descripcion</p>
+                            
+                            <!-- BOTONES DE ACCIÓN -->
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="/Reportes/Edit/@r.Id" class="btn btn-primary btn-sm flex-grow-1">✏️ Actualizar estado</a>
+                                <form asp-action="Delete" asp-controller="Reportes" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este reporte?');">
+                                    <input type="hidden" name="id" value="@r.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        } else {
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-info">
+                    <h4>No hay reportes registrados</h4>
+                    <p class="mb-0">Sé el primero en reportar un animal que necesite ayuda.</p>
+                </div>
+            </div>
+        }
     </div>
-
-    <div class="col-lg-7">
-      <div class="casa-filters mb-3" role="search" aria-label="Filtrar reportes">
-        <input class="form-control casa-search" type="search" id="l-texto" placeholder="Buscar en ubicación o descripción" aria-label="Buscar reportes">
-        <select class="form-select" id="l-tipo" aria-label="Tipo de reporte"><option value="">Todos los tipos</option></select>
-      </div>
-
-      <div class="casa-table-wrap" id="listado" aria-live="polite">
-        <div class="casa-skeleton" style="min-height:260px" aria-hidden="true"></div>
-      </div>
-    </div>
-  </div>
 </div>
-
-@section Scripts {
-<script>
-  document.addEventListener('DOMContentLoaded', async function () {
-    if (typeof CASA === 'undefined') return;
-    const E = CASA.endpoints, g = CASA.g, esc = CASA.esc;
-    const $ = (id) => document.getElementById(id);
-    let reportes = [], tiposById = {};
-
-    const pad = (n) => String(n).padStart(2, '0');
-    function ahoraLocal() {
-      const d = new Date();
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
-    $('r-fecha').value = ahoraLocal();
-    $('r-ciudadano').value = CASA.session.getCiudadanoId();
-
-    async function cargarCatalogos() {
-      const [tipos, rescatistas] = await Promise.all([
-        CASA.api.list(E.tiposReporte).catch((e) => { $('r-tipo').innerHTML = '<option value="">No se pudieron cargar los tipos</option>'; throw e; }),
-        CASA.api.listSoft(E.rescatistas)
-      ]);
-      tiposById = CASA.byId(tipos);
-      $('r-tipo').innerHTML = '<option value="">Elige una opción</option>' +
-        tipos.map((t) => `<option value="${esc(g(t, 'id'))}">${esc(g(t, 'nombre'))}</option>`).join('');
-      $('l-tipo').innerHTML = '<option value="">Todos los tipos</option>' +
-        tipos.map((t) => `<option value="${esc(g(t, 'id'))}">${esc(g(t, 'nombre'))}</option>`).join('');
-
-      if (rescatistas.length) {
-        $('grp-rescatista').classList.remove('d-none');
-        $('r-rescatista').insertAdjacentHTML('beforeend', rescatistas.map((r) =>
-          `<option value="${esc(g(r, 'id'))}">Rescatista #${esc(g(r, 'id'))}${g(r, 'disponible') ? ' · ' + esc(g(r, 'disponible')) : ''}</option>`).join(''));
-      }
-    }
-
-    $('r-tipo').addEventListener('change', () => {
-      const nombre = CASA.strip(g(tiposById[$('r-tipo').value], 'nombre'));
-      $('grp-denuncia').classList.toggle('d-none', !/abandon/.test(nombre));
-    });
-
-    $('btn-geo').addEventListener('click', () => {
-      if (!navigator.geolocation) { CASA.ui.toast('Tu navegador no permite obtener la ubicación.', 'bad'); return; }
-      $('btn-geo').disabled = true;
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          $('r-ubicacion').value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
-          $('btn-geo').disabled = false;
-        },
-        () => { CASA.ui.toast('No pudimos obtener tu ubicación. Escribe la dirección.', 'bad'); $('btn-geo').disabled = false; },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    });
-
-    function renderListado() {
-      const host = $('listado');
-      const q = CASA.strip($('l-texto').value), tipo = $('l-tipo').value;
-      const lista = reportes
-        .filter((r) => !tipo || String(g(r, 'tipoReportesId')) === tipo)
-        .filter((r) => !q || CASA.strip(`${g(r, 'ubicaion', 'ubicacion')} ${g(r, 'descripcion')}`).includes(q))
-        .sort((a, b) => new Date(g(b, 'fecha')) - new Date(g(a, 'fecha')));
-
-      if (!lista.length) {
-        CASA.ui.empty(host, '🐕', reportes.length ? 'Ningún reporte coincide' : 'Aún no hay reportes',
-          reportes.length ? 'Prueba con otra palabra o quita el filtro de tipo.' : 'Cuando alguien envíe un aviso aparecerá aquí.');
-        return;
-      }
-      host.innerHTML = `
-        <div class="table-responsive">
-          <table class="table casa-table casa-table--tight">
-            <thead><tr><th>Tipo</th><th>Ubicación</th><th>Descripción</th><th>Fecha</th><th>Estado</th></tr></thead>
-            <tbody>
-              ${lista.map((r) => {
-                const tipoObj = tiposById[g(r, 'tipoReportesId')] || g(r, 'tipoReporte');
-                return `<tr>
-                  <td class="fw-bold">${esc(g(tipoObj, 'nombre') || '—')}</td>
-                  <td>${esc(g(r, 'ubicaion', 'ubicacion') || '—')}</td>
-                  <td><span class="d-inline-block text-truncate align-bottom" style="max-width:120px" title="${esc(g(r, 'descripcion'))}">${esc(g(r, 'descripcion') || '—')}</span></td>
-                  <td class="text-nowrap">${CASA.fmtDate(g(r, 'fecha'))}</td>
-                  <td>${CASA.badge(g(r, 'estado'))}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>`;
-    }
-
-    async function cargarReportes() {
-      try {
-        reportes = await CASA.api.list(E.reportes);
-        renderListado();
-      } catch (err) {
-        CASA.ui.error($('listado'), err, E.reportes);
-      }
-    }
-    $('l-texto').addEventListener('input', renderListado);
-    $('l-tipo').addEventListener('change', renderListado);
-
-    const form = $('formReporte');
-    form.addEventListener('submit', async (ev) => {
-      ev.preventDefault();
-      form.classList.add('was-validated');
-      if (!form.checkValidity()) return;
-
-      const boton = $('r-enviar'), errBox = $('r-error');
-      boton.disabled = true;
-      errBox.classList.add('d-none');
-
-      const body = {
-        estado: 'Pendiente',
-        ubicaion: $('r-ubicacion').value.trim(),
-        descripcion: $('r-desc').value.trim(),
-        fecha: new Date($('r-fecha').value).toISOString(),
-        tipoReportesId: Number($('r-tipo').value),
-        ciudadanoId: Number($('r-ciudadano').value)
-      };
-      if ($('r-rescatista').value) body.rescatistasId = Number($('r-rescatista').value);
-
-      try {
-        const creado = await CASA.api.post(E.reportes, body);
-        CASA.session.setCiudadanoId($('r-ciudadano').value);
-
-        const denunciado = $('r-denunciado').value.trim();
-        if (!$('grp-denuncia').classList.contains('d-none') && denunciado) {
-          try {
-            await CASA.api.post(E.denuncias, {
-              denunciado,
-              evidencia: $('r-evidencia').value.trim(),
-              reporteId: g(creado, 'id')
-            });
-          } catch (e) {
-            CASA.ui.toast('El reporte se guardó, pero no pudimos registrar la denuncia: ' + e.message, 'bad');
-          }
-        }
-        if (!localStorage.getItem('casa.token')) {
-          window.location.href = '/Auth/Login?next=' + encodeURIComponent(window.location.pathname);
-        }
-  
-
-        CASA.ui.toast('¡Gracias! Recibimos tu reporte.', 'ok');
-        form.reset();
-        form.classList.remove('was-validated');
-        $('r-fecha').value = ahoraLocal();
-        $('r-ciudadano').value = CASA.session.getCiudadanoId();
-        $('grp-denuncia').classList.add('d-none');
-        await cargarReportes();
-      } catch (err) {
-        errBox.textContent = err.message;
-        errBox.classList.remove('d-none');
-      } finally {
-        boton.disabled = false;
-      }
-    });
-
-    try { await cargarCatalogos(); } catch (_) { /* el formulario muestra el aviso */ }
-    await cargarReportes();
-  });
-</script>
-}

@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Acceso Denegado";
+    Layout = "_Layout";
+}
+
+<header class="casa-hero casa-hero--page bg-danger">
+    <div class="container">
+        <h1>⛔ Acceso Denegado</h1>
+    </div>
+</header>
+
+<div class="container casa-overlap">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-danger">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-shield-lock" style="font-size: 5rem; color: #dc3545;"></i>
+                    </div>
+                    <h2 class="card-title text-danger mb-3">No tienes permisos para acceder</h2>
+                    <p class="card-text text-muted mb-4">
+                        No tienes autorización para editar este reporte. Solo el administrador, 
+                        un rescatista o el usuario que creó el reporte pueden modificarlo.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="/Reportes" class="btn btn-primary btn-lg">
+                            ← Volver a Reportes
+                        </a>
+                        <a href="/" class="btn btn-outline-secondary">
+                            🏠 Ir al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,13 @@
+@{ ViewData["Title"] = "Distritos"; Layout = "_Layout"; var distritos = ViewBag.Distritos as List<Proyecto.Models.Distritos>; }
+<header class="casa-hero casa-hero--page"><div class="container"><h1>Distritos</h1><a class="btn btn-casa btn-casa-sm mt-3" href="/Distritos/Create">➕ Nuevo</a></div></header>
+<div class="container casa-overlap">
+  @if(TempData["Success"]!=null){<div class="alert alert-success mt-3">@TempData["Success"]</div>}
+  <table class="table mt-3">
+    <thead><tr><th>Nombre</th><th>Color</th><th>Acciones</th></tr></thead>
+    <tbody>
+      @foreach(var d in distritos){
+        <tr><td>@d.nombre</td><td><span class="badge" style="background:@d.ColorCinta">@d.ColorCinta</span></td><td><form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar?');"><input type="hidden" name="id" value="@d.Id"/><button type="submit" class="btn btn-sm btn-danger">🗑️</button></form></td></tr>
+      }
+    </tbody>
+  </table>
+</div>

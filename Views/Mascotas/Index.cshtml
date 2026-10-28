@@ -32,6 +32,20 @@
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   }
+  @if (TempData["Error"] != null)
+  {
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+      @TempData["Error"]
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  }
+  @if (TempData["Warning"] != null)
+  {
+    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+      @TempData["Warning"]
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  }
 
   <form class="casa-filters" id="filtros" role="search" onsubmit="return false">
     <input class="form-control casa-search" type="search" id="f-texto" placeholder="Buscar por nombre, color o característica">
@@ -75,6 +89,16 @@
         var s when s.Contains("no disponible") || s.Contains("fallec") => "is-bad",
         _ => "is-neutral"
       };
+
+      // 1. Determinar si la mascota está disponible para adopción
+      var disponible = estadoLower.Contains("en adopción") || estadoLower.Contains("disponible");
+      
+      // 2. Verificar si ya tiene solicitudes pendientes o aprobadas
+      var tieneSolicitud = false;
+      try {
+          var solicitudesPendientes = ViewBag.SolicitudesPendientes as List<int> ?? new List<int>();
+          tieneSolicitud = solicitudesPendientes.Contains(m.Id);
+      } catch { }
       
       <div class="col mascota-card" 
            data-especie="@(m.Especie ?? "")" 
@@ -112,6 +136,36 @@
                 <a class="btn btn-casa-ghost btn-casa-sm text-danger delete-btn" href="/Mascotas/Delete/@m.Id" title="Eliminar">🗑️</a>
               </div>
             </div>
+            
+            <!-- BOTÓN DE ADOPTAR (Con validación de disponibilidad y solicitudes) -->
+            @if (disponible && !tieneSolicitud)
+            {
+              <div class="mt-3 adopt-btn-container">
+                <form asp-action="Adoptar" asp-controller="Adopciones" method="post">
+                  <input type="hidden" name="mascotaId" value="@m.Id" />
+                  <button type="submit" class="btn btn-success w-100 py-2 fw-bold" 
+                          onclick="return confirm('¿Deseas solicitar la adopción de @m.Nombre? Se creará una solicitud automáticamente.');">
+                    ❤️ Adoptar a @m.Nombre
+                  </button>
+                </form>
+              </div>
+            }
+            else if (tieneSolicitud)
+            {
+              <div class="mt-3">
+                <div class="alert alert-warning text-center mb-0 py-2">
+                  <small>⏳ Ya hay solicitudes en proceso para esta mascota</small>
+                </div>
+              </div>
+            }
+            else
+            {
+              <div class="mt-3">
+                <div class="alert alert-secondary text-center mb-0 py-2">
+                  <small>🏠 No disponible para adopción</small>
+                </div>
+              </div>
+            }
           </div>
         </article>
       </div>
@@ -130,6 +184,7 @@
     const esAdmin = rol === 'administrador';
     const esRescatista = rol === 'rescatista';
     const puedeEditar = esAdmin || esRescatista;
+    const estaLogueado = user !== null;
 
     if (puedeEditar) {
       const btnCrear = document.getElementById('btn-crear-mascota');
@@ -145,6 +200,13 @@
         if (deleteBtn) deleteBtn.remove();
       }
     });
+
+    // Ocultar botones de adoptar si no está logueado
+    if (!estaLogueado) {
+      document.querySelectorAll('.adopt-btn-container').forEach(el => {
+        el.innerHTML = '<div class="alert alert-info text-center mb-0 py-2"><small>🔐 Inicia sesión para adoptar</small></div>';
+      });
+    }
 
     const cards = document.querySelectorAll('.mascota-card');
     const fill = (id, dataAttr) => {

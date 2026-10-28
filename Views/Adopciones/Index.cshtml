@@ -1,179 +1,96 @@
 @{
-    ViewData["Title"] = "Adopciones";
-    ViewData["Page"] = "adopciones";
+    ViewData["Title"] = "Mis Solicitudes de Adopción";
     Layout = "_Layout";
+    var solicitudes = ViewBag.Solicitudes as List<Proyecto.Models.SolicitudesAdopcion> ?? new List<Proyecto.Models.SolicitudesAdopcion>();
+    var esAdmin = ViewBag.EsAdmin as bool? ?? false;
+    var esRescatista = ViewBag.EsRescatista as bool? ?? false;
 }
 
 <header class="casa-hero casa-hero--page">
-  <div class="container">
-    <h1>Adopciones</h1>
-    <p>Sigue el estado de cada solicitud y consulta los contratos ya firmados.</p>
-  </div>
+    <div class="container">
+        <h1>Mis Solicitudes de Adopción</h1>
+        <p>Revisa el estado de tus postulaciones.</p>
+        <div class="d-flex gap-2 mt-3">
+            <a class="btn btn-casa btn-casa-sm" href="/Mascotas">🐾 Buscar mascotas</a>
+            
+            @if (ViewBag.EsAdmin == true || ViewBag.EsRescatista == true)
+            {
+                <a class="btn btn-warning btn-casa-sm text-dark fw-bold border-0" href="/Adopciones/Solicitudes" style="background-color: #FF7A00;">
+                    📋 PANEL ADMIN: Ver TODAS las solicitudes
+                </a>
+            }
+        </div>
+    </div>
 </header>
 
 <div class="container casa-overlap">
-  <div class="row row-cols-1 row-cols-sm-3 g-3 mb-4">
-    <div class="col"><div class="casa-counter"><strong id="k-total">—</strong><span>Solicitudes</span></div></div>
-    <div class="col"><div class="casa-counter"><strong id="k-pend">—</strong><span>Pendientes</span></div></div>
-    <div class="col"><div class="casa-counter"><strong id="k-contratos">—</strong><span>Contratos firmados</span></div></div>
-  </div>
+    @if (TempData["Success"] != null) { <div class="alert alert-success mt-3">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger mt-3">@TempData["Error"]</div> }
+    @if (TempData["Warning"] != null) { <div class="alert alert-warning mt-3">@TempData["Warning"]</div> }
 
-  <ul class="nav nav-pills gap-2 mb-3" id="pestanas" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="btn-casa-ghost btn-casa btn-casa-sm active" id="tab-sol" data-bs-toggle="pill" data-bs-target="#panel-sol" type="button" role="tab" aria-controls="panel-sol" aria-selected="true">Solicitudes</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="btn-casa-ghost btn-casa btn-casa-sm" id="tab-con" data-bs-toggle="pill" data-bs-target="#panel-con" type="button" role="tab" aria-controls="panel-con" aria-selected="false">Contratos</button>
-    </li>
-  </ul>
+    <div class="row g-4 mt-2">
+        @if (solicitudes.Any())
+        {
+            foreach (var s in solicitudes)
+            {
+                var ciudadano = s.Ciudadanos;
+                var usuario = ciudadano?.usuarios;
+                var mascota = s.Mascotas;
 
-  <div class="tab-content">
-    <div class="tab-pane fade show active" id="panel-sol" role="tabpanel" aria-labelledby="tab-sol" tabindex="0">
-      <div class="d-flex flex-wrap gap-2 mb-3" id="chips" role="group" aria-label="Filtrar por estado"></div>
-      <div class="casa-table-wrap" id="tabla" aria-live="polite">
-        <div class="casa-skeleton" style="min-height:240px" aria-hidden="true"></div>
-      </div>
-    </div>
-    <div class="tab-pane fade" id="panel-con" role="tabpanel" aria-labelledby="tab-con" tabindex="0">
-      <div class="row g-3 row-cols-1 row-cols-md-2 row-cols-xl-3" id="contratos"></div>
-    </div>
-  </div>
-</div>
+                var badgeClass = s.Estado switch {
+                    "Pendiente" => "bg-warning text-dark",
+                    "Aprobada" => "bg-success",
+                    "Rechazada" => "bg-danger",
+                    "En proceso" => "bg-info text-dark",
+                    _ => "bg-secondary"
+                };
 
-@section Scripts {
-<script>
-  document.addEventListener('DOMContentLoaded', async function () {
-    if (typeof CASA === 'undefined') return;
-    const E = CASA.endpoints, g = CASA.g, esc = CASA.esc;
-    const $ = (id) => document.getElementById(id);
+                <div class="col-md-6 col-lg-4">
+                    <div class="casa-card h-100">
+                        <div class="casa-card__body">
+                            @if (!string.IsNullOrEmpty(mascota?.Foto)) {
+                                <img src="@mascota.Foto" class="img-fluid rounded mb-3" style="max-height: 200px; width: 100%; object-fit: cover;">
+                            }
 
-    if (!CASA.auth.hasRole('Administrador', 'Rescatista')) {
-      document.querySelector('.casa-overlap').innerHTML = '<div id="acceso"></div>';
-      CASA.ui.locked($('acceso'), 'Acceso restringido');
-      if (CASA.auth.isLoggedIn()) $('acceso').querySelector('.casa-state').insertAdjacentHTML('beforeend',
-        '<a class="btn-casa mt-2" href="/Perfil">Ver mis solicitudes</a>');
-      return;
-    }
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="mb-0 fw-bold">🐾 @mascota?.Nombre</h5>
+                                <span class="badge @badgeClass">@s.Estado</span>
+                            </div>
+                            <p class="small text-muted mb-2">@mascota?.Especie | @mascota?.Edad</p>
+                            <hr>
+                            
+                            <p class="small text-muted mb-3">📅 Postulado el: @s.fecha.ToString("dd/MM/yyyy")</p>
 
-    $('pestanas').addEventListener('shown.bs.tab', (ev) => {
-      document.querySelectorAll('#pestanas .btn-casa').forEach((b) => b.classList.toggle('btn-casa-blue', b === ev.target));
-      document.querySelectorAll('#pestanas .btn-casa').forEach((b) => b.classList.toggle('btn-casa-ghost', b !== ev.target));
-    });
-    $('tab-sol').classList.replace('btn-casa-ghost', 'btn-casa-blue');
+                            <!-- CIUDADANO: Puede cancelar su solicitud si está pendiente -->
+                            @if (!esAdmin && !esRescatista && s.Estado == "Pendiente")
+                            {
+                                <form asp-action="Delete" method="post" onsubmit="return confirm('¿Cancelar tu solicitud?');">
+                                    <input type="hidden" name="id" value="@s.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">❌ Cancelar mi solicitud</button>
+                                </form>
+                            }
 
-    const [sol, ado, mas] = await Promise.allSettled([
-      CASA.api.list(E.solicitudes),
-      CASA.api.list(E.adopciones),
-      CASA.api.list(E.mascotas)
-    ]);
-
-    if (sol.status !== 'fulfilled') {
-      CASA.ui.error($('tabla'), sol.reason, E.solicitudes);
-      $('contratos').innerHTML = '';
-      return;
-    }
-
-    const solicitudes = sol.value;
-    const adopciones = ado.status === 'fulfilled' ? ado.value : [];
-    const mascotasById = mas.status === 'fulfilled' ? CASA.byId(mas.value) : {};
-    const solById = CASA.byId(solicitudes);
-    const contratoPorSolicitud = Object.fromEntries(adopciones.map((a) => [g(a, 'solicitudId'), a]));
-
-    const mascotaDe = (s) => g(s, 'mascotas', 'mascota') || mascotasById[g(s, 'mascotaId')];
-
-    $('k-total').textContent = solicitudes.length;
-    $('k-pend').textContent = solicitudes.filter((s) => CASA.estadoClass(g(s, 'estado')) === 'is-wait').length;
-    $('k-contratos').textContent = ado.status === 'fulfilled' ? adopciones.length : '—';
-
-    let filtro = '';
-    const estados = [...new Set(solicitudes.map((s) => g(s, 'estado')).filter(Boolean))];
-    $('chips').innerHTML = ['', ...estados].map((e) =>
-      `<button type="button" class="casa-chip ${e === '' ? 'is-active' : ''}" data-estado="${esc(e)}" aria-pressed="${e === ''}">${e === '' ? 'Todas' : esc(e)}</button>`).join('');
-    $('chips').addEventListener('click', (ev) => {
-      const chip = ev.target.closest('.casa-chip');
-      if (!chip) return;
-      filtro = chip.dataset.estado;
-      $('chips').querySelectorAll('.casa-chip').forEach((c) => {
-        c.classList.toggle('is-active', c === chip);
-        c.setAttribute('aria-pressed', c === chip);
-      });
-      renderSolicitudes();
-    });
-
-    function renderSolicitudes() {
-      const lista = solicitudes
-        .filter((s) => !filtro || g(s, 'estado') === filtro)
-        .sort((a, b) => new Date(g(b, 'fecha')) - new Date(g(a, 'fecha')));
-
-      if (!lista.length) {
-        CASA.ui.empty($('tabla'), '📭', 'No hay solicitudes para mostrar',
-          solicitudes.length ? 'Prueba con otro estado.' : 'Las solicitudes de adopción aparecerán aquí cuando alguien las envíe.');
-        return;
-      }
-      $('tabla').innerHTML = `
-        <div class="table-responsive">
-          <table class="table casa-table">
-            <thead><tr><th>Mascota</th><th>Ciudadano</th><th>Fecha</th><th>Estado</th><th>Contrato</th></tr></thead>
-            <tbody>
-              ${lista.map((s) => {
-                const m = mascotaDe(s);
-                const foto = CASA.imgUrl(g(m, 'foto'));
-                const ciu = g(s, 'ciudadanos', 'ciudadano');
-                const barrio = g(ciu, 'barrio');
-                const contrato = contratoPorSolicitud[g(s, 'id')];
-                return `<tr>
-                  <td><div class="cell-pet">
-                    ${foto ? `<img src="${esc(foto)}" alt="" loading="lazy" data-fallback>` : `<span class="thumb-fallback" aria-hidden="true">${CASA.especieEmoji(g(m, 'especie'))}</span>`}
-                    <span>${esc(g(m, 'nombre') || 'Mascota #' + g(s, 'mascotaId'))}</span>
-                  </div></td>
-                  <td>#${esc(g(s, 'ciudadanoId'))}${barrio ? `<br><small class="text-muted">${esc(barrio)}</small>` : ''}</td>
-                  <td class="text-nowrap">${CASA.fmtDate(g(s, 'fecha'))}</td>
-                  <td>${CASA.badge(g(s, 'estado'))}</td>
-                  <td>${contrato ? `<span class="casa-badge is-done">${esc(g(contrato, 'numeroSerie') || 'Firmado')}</span>` : '<span class="text-muted">—</span>'}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>`;
-    }
-    renderSolicitudes();
-    
-    if (!localStorage.getItem('casa.token')) {
-    window.location.href = '/Auth/Login?next=' + encodeURIComponent(window.location.pathname);
-    }
-  
-
-    const cont = $('contratos');
-    if (ado.status !== 'fulfilled') {
-      CASA.ui.error(cont, ado.reason, E.adopciones);
-    } else if (!adopciones.length) {
-      CASA.ui.empty(cont, '📄', 'Todavía no hay contratos firmados', 'Cuando se apruebe una adopción, su contrato aparecerá aquí.');
-    } else {
-      cont.innerHTML = adopciones
-        .sort((a, b) => new Date(g(b, 'fecha')) - new Date(g(a, 'fecha')))
-        .map((a) => {
-          const s = g(a, 'solicitudesAdopcion') || solById[g(a, 'solicitudId')];
-          const m = s && mascotaDe(s);
-          const firma = String(g(a, 'firma') || '');
-          const firmaImg = /^data:image\/(png|jpe?g|webp);base64,[a-z0-9+/=]+$/i.test(firma);
-          return `
-            <div class="col"><article class="casa-contract">
-              <div class="d-flex align-items-start gap-3">
-                <span class="casa-card__icon casa-card__icon--orange" aria-hidden="true">${CASA.especieEmoji(g(m, 'especie'))}</span>
-                <div>
-                  <div class="casa-contract__serial">${esc(g(a, 'numeroSerie') || 'Sin número')}</div>
-                  <div class="fw-bold">${esc(g(m, 'nombre') || 'Solicitud #' + g(a, 'solicitudId'))}</div>
-                  <small class="text-muted">Firmado el ${CASA.fmtDate(g(a, 'fecha'))}</small>
+                            <!-- ADMIN: Puede eliminar desde aquí también -->
+                            @if (esAdmin)
+                            {
+                                <form asp-action="Delete" method="post" class="mt-2" onsubmit="return confirm('¿Eliminar?');">
+                                    <input type="hidden" name="id" value="@s.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">🗑️ Eliminar</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
                 </div>
-              </div>
-              ${g(a, 'estado') ? `<div class="mt-2">${CASA.badge(g(a, 'estado'))}</div>` : ''}
-              <div class="casa-contract__sign">
-                ${firmaImg ? `<img src="${esc(firma)}" alt="Firma del adoptante">` : (firma ? 'Firma: ' + esc(firma) : 'Sin firma registrada')}
-              </div>
-            </article></div>`;
-        }).join('');
-    }
-  });
-  
-</script>
-}
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-info">
+                    <h4>No tienes solicitudes activas</h4>
+                    <p class="mb-0">¡Ve a la sección de mascotas y postúlate para adoptar!</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

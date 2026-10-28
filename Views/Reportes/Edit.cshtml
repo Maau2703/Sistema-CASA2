@@ -1,0 +1,56 @@
+@model Proyecto.Models.Reportes
+@{ 
+    ViewData["Title"] = "Actualizar Reporte"; 
+    Layout = "_Layout"; 
+    var tipos = ViewBag.Tipos as List<Proyecto.Models.TipoReporte>; 
+}
+
+<header class="casa-hero casa-hero--page">
+    <div class="container">
+        <h1>Actualizar Estado del Reporte</h1>
+        <p>Modifica el estado de seguimiento de este reporte.</p>
+    </div>
+</header>
+
+<div class="container casa-overlap">
+  <div class="casa-form-card" style="max-width:700px;margin:0 auto;">
+    <form asp-action="Edit" method="post">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="Id" value="@Model.Id"/>
+      
+      <div class="mb-3">
+        <label class="form-label text-muted">Tipo de reporte</label>
+        <input type="text" class="form-control" value="@Model.TipoReporte?.nombre" readonly>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-muted">Ubicación</label>
+        <input type="text" class="form-control" value="@Model.Ubicaion" readonly>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-muted">Descripción original</label>
+        <textarea class="form-control" rows="3" readonly>@Model.Descripcion</textarea>
+      </div>
+
+      <!-- CAMPO CLAVE: Cambiar el estado -->
+      <div class="mb-4 p-3 bg-light rounded border">
+        <label class="form-label fw-bold text-primary">Nuevo Estado del Reporte *</label>
+        <select name="estado" class="form-select form-select-lg" required>
+            <option value="Pendiente" selected="@(Model.estado == "Pendiente")">⏳ Pendiente</option>
+            <option value="En proceso" selected="@(Model.estado == "En proceso")">🔍 En proceso de búsqueda/rescate</option>
+            <option value="Resuelto" selected="@(Model.estado == "Resuelto")">✅ Resuelto (Encontrado/Atendido)</option>
+            <option value="Falso" selected="@(Model.estado == "Falso")">❌ Reporte Falso / No encontrado</option>
+        </select>
+        <div class="form-text mt-2">
+            ℹ️ Solo el administrador, un rescatista o el usuario que creó este reporte pueden actualizar su estado.
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-casa btn-casa-lg">💾 Guardar cambios</button>
+        <a class="btn btn-casa-ghost btn-casa btn-casa-lg" href="/Reportes">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>

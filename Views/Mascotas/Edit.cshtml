@@ -3,7 +3,7 @@
     ViewData["Title"] = "Editar Mascota";
     ViewData["Page"] = "mascotas";
     Layout = "_Layout";
-    var distritos = ViewBag.Distritos as List<Proyecto.Models.Distritos>;
+    var distritos = ViewBag.Distritos as List<Proyecto.Models.Distritos> ?? new List<Proyecto.Models.Distritos>();
 }
 
 <header class="casa-hero casa-hero--page">
@@ -15,86 +15,80 @@
 
 <div class="container casa-overlap">
   <div class="casa-form-card" style="max-width: 700px; margin: 0 auto;">
-    <h2 class="mb-4">Datos de la mascota</h2>
-    <form asp-action="Edit" method="post" novalidate>
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
       @Html.AntiForgeryToken()
-      <input type="hidden" asp-for="Id" />
+      <input type="hidden" name="Id" value="@Model.Id" />
       
       <div class="mb-3">
-        <label asp-for="Nombre" class="form-label">Nombre *</label>
-        <input asp-for="Nombre" class="form-control" required>
-        <span asp-validation-for="Nombre" class="text-danger"></span>
+        <label class="form-label">Nombre *</label>
+        <input type="text" name="Nombre" class="form-control" required value="@Model.Nombre">
       </div>
 
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <label asp-for="Especie" class="form-label">Especie *</label>
-          <select asp-for="Especie" class="form-select" required>
-            <option value="">Selecciona...</option>
-            <option>Perro</option>
-            <option>Gato</option>
-            <option>Conejo</option>
-            <option>Ave</option>
-            <option>Otro</option>
-          </select>
-          <span asp-validation-for="Especie" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
-          <label asp-for="Edad" class="form-label">Edad aproximada *</label>
-          <input asp-for="Edad" class="form-control" required>
-          <span asp-validation-for="Edad" class="text-danger"></span>
-        </div>
-      </div>
-
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <label asp-for="Tamaño" class="form-label">Tamaño *</label>
-          <select asp-for="Tamaño" class="form-select" required>
-            <option value="">Selecciona...</option>
-            <option>Pequeño</option>
-            <option>Mediano</option>
-            <option>Grande</option>
-          </select>
-          <span asp-validation-for="Tamaño" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
-          <label asp-for="Color" class="form-label">Color *</label>
-          <input asp-for="Color" class="form-control" required>
-          <span asp-validation-for="Color" class="text-danger"></span>
-        </div>
-      </div>
-
+      <!-- NUEVO: Campo para cambiar el Estado -->
       <div class="mb-3">
-        <label asp-for="Estado" class="form-label">Estado *</label>
-        <select asp-for="Estado" class="form-select" required>
-          <option>En calle</option>
-          <option>Rescatado</option>
-          <option>En adopción</option>
-          <option>Adoptado</option>
+        <label class="form-label">Estado de la mascota *</label>
+        <select name="Estado" class="form-select" required>
+            <option value="En adopción" selected="@(Model.Estado == "En adopción")">🏠 En adopción</option>
+            <option value="Adoptado" selected="@(Model.Estado == "Adoptado")">✅ Adoptado</option>
+            <option value="En rescate" selected="@(Model.Estado == "En rescate")">🚑 En rescate</option>
+            <option value="No disponible" selected="@(Model.Estado == "No disponible")">❌ No disponible</option>
         </select>
-        <span asp-validation-for="Estado" class="text-danger"></span>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Especie *</label>
+          <select name="Especie" class="form-select" required>
+            <option value="Perro" selected="@(Model.Especie == "Perro")">Perro</option>
+            <option value="Gato" selected="@(Model.Especie == "Gato")">Gato</option>
+            <option value="Conejo" selected="@(Model.Especie == "Conejo")">Conejo</option>
+            <option value="Ave" selected="@(Model.Especie == "Ave")">Ave</option>
+            <option value="Otro" selected="@(Model.Especie == "Otro")">Otro</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Edad aproximada *</label>
+          <input type="text" name="Edad" class="form-control" required value="@Model.Edad">
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Tamaño *</label>
+          <select name="Tamaño" class="form-select" required>
+            <option value="Pequeño" selected="@(Model.Tamaño == "Pequeño")">Pequeño</option>
+            <option value="Mediano" selected="@(Model.Tamaño == "Mediano")">Mediano</option>
+            <option value="Grande" selected="@(Model.Tamaño == "Grande")">Grande</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Color *</label>
+          <input type="text" name="Color" class="form-control" required value="@Model.Color">
+        </div>
       </div>
 
       <div class="mb-3">
-        <label asp-for="Caracteristica" class="form-label">Características / Descripción</label>
-        <textarea asp-for="Caracteristica" class="form-control" rows="3"></textarea>
+        <label class="form-label">Características / Descripción</label>
+        <textarea name="Caracteristica" class="form-control" rows="3">@Model.Caracteristica</textarea>
       </div>
 
       <div class="mb-3">
-        <label asp-for="Foto" class="form-label">URL de la foto</label>
-        <input asp-for="Foto" class="form-control">
+        <label class="form-label">Foto actual</label>
+        @if (!string.IsNullOrEmpty(Model.Foto)) {
+            <div class="mb-2"><img src="@Model.Foto" alt="Foto" style="max-width: 200px; border-radius: 8px;"></div>
+        }
+        <label class="form-label">Subir nueva foto (opcional)</label>
+        <input type="file" name="fotoFile" class="form-control" accept="image/*">
       </div>
 
       <div class="mb-3">
-        <label asp-for="DistritoId" class="form-label">Distrito *</label>
-        <select asp-for="DistritoId" class="form-select" required>
-          <option value="">Selecciona un distrito...</option>
-          @foreach (var d in distritos)
-          {
-            <option value="@d.Id">@d.nombre</option>
+        <label class="form-label">Distrito *</label>
+        <select name="DistritoId" class="form-select" required>
+          <option value="">Selecciona...</option>
+          @foreach (var d in distritos) {
+            <option value="@d.Id" selected="@(Model.DistritoId == d.Id)">@d.nombre</option>
           }
         </select>
-        <span asp-validation-for="DistritoId" class="text-danger"></span>
       </div>
 
       <div class="d-flex gap-2 mt-4">
@@ -104,7 +98,3 @@
     </form>
   </div>
 </div>
-
-@section Scripts {
-  <partial name="_ValidationScriptsPartial" />
-}

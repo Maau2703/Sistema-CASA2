@@ -1,0 +1,55 @@
+@model Proyecto.Models.SolicitudesAdopcion
+@{
+    ViewData["Title"] = "Solicitar Adopción";
+    Layout = "_Layout";
+    var mascotas = ViewBag.Mascotas as List<Proyecto.Models.Mascotas> ?? new List<Proyecto.Models.Mascotas>();
+}
+
+<header class="casa-hero casa-hero--page">
+    <div class="container">
+        <h1>Solicitar Adopción</h1>
+        <p>Selecciona la mascota que deseas adoptar.</p>
+    </div>
+</header>
+
+<div class="container casa-overlap">
+    <div class="casa-form-card" style="max-width: 700px; margin: 0 auto;">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger mb-4">
+                <h5 class="alert-heading">Por favor corrige los siguientes errores:</h5>
+                <ul class="mb-0">
+                    @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@e.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Mascota a adoptar *</label>
+                <select name="mascotaId" class="form-select form-select-lg" required>
+                    <option value="">Selecciona una mascota...</option>
+                    @foreach (var m in mascotas)
+                    {
+                        <option value="@m.Id">@m.Nombre (@m.Especie - @m.Edad)</option>
+                    }
+                </select>
+                <div class="form-text">Solo se muestran mascotas disponibles para adopción.</div>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>ℹ️ Nota:</strong> Al enviar esta solicitud, un administrador o rescatista la revisará y se pondrá en contacto contigo.
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-casa btn-casa-lg">📤 Enviar solicitud</button>
+                <a class="btn btn-casa-ghost btn-casa btn-casa-lg" href="/Adopciones">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

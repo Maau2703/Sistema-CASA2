@@ -1,0 +1,88 @@
+@model Proyecto.Models.Establecimientos
+@{
+    ViewData["Title"] = "Registrar Establecimiento";
+    ViewData["Page"] = "establecimientos";
+    Layout = "_Layout";
+    var tipos = ViewBag.Tipos as List<Proyecto.Models.TipoEstablecimientos> ?? new List<Proyecto.Models.TipoEstablecimientos>();
+    var distritos = ViewBag.Distritos as List<Proyecto.Models.Distritos> ?? new List<Proyecto.Models.Distritos>();
+}
+
+<header class="casa-hero casa-hero--page">
+  <div class="container">
+    <h1>Registrar Establecimiento</h1>
+    <p>Completa la información del nuevo establecimiento.</p>
+  </div>
+</header>
+
+<div class="container casa-overlap">
+  <div class="casa-form-card" style="max-width: 700px; margin: 0 auto;">
+    <h2 class="mb-4">Datos del establecimiento</h2>
+    
+    @if (!ViewData.ModelState.IsValid) {
+        <div class="alert alert-danger mb-4">
+            <h5 class="alert-heading">Por favor corrige los siguientes errores:</h5>
+            <ul class="mb-0">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors)) {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-action="Create" method="post">
+      @Html.AntiForgeryToken()
+      
+      <div class="mb-3">
+        <label class="form-label">Nombre *</label>
+        <input type="text" name="nombre" class="form-control" required value="@Model?.nombre">
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Tipo de establecimiento *</label>
+          <select name="TipoEstablecimientoId" class="form-select" required>
+            <option value="">Selecciona...</option>
+            @foreach (var t in tipos) {
+              <option value="@t.Id" selected="@(Model?.TipoEstablecimientoId == t.Id)">@t.nombre</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Distrito *</label>
+          <select name="DistritoId" class="form-select" required>
+            <option value="">Selecciona...</option>
+            @foreach (var d in distritos) {
+              <option value="@d.Id" selected="@(Model?.DistritoId == d.Id)">@d.nombre</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Dirección *</label>
+        <input type="text" name="direccion" class="form-control" required value="@Model?.direccion">
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Teléfono</label>
+          <input type="text" name="telefono" class="form-control" value="@Model?.telefono">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Capacidad</label>
+          <input type="number" name="capacidad" class="form-control" value="@(Model?.capacidad > 0 ? Model.capacidad.ToString() : "")">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Horario</label>
+        <input type="text" name="horario" class="form-control" value="@Model?.horario">
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-casa btn-casa-lg">💾 Guardar</button>
+        <a class="btn btn-casa-ghost btn-casa btn-casa-lg" href="/Establecimientos">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
