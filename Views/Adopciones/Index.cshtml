@@ -16,7 +16,7 @@
             @if (ViewBag.EsAdmin == true || ViewBag.EsRescatista == true)
             {
                 <a class="btn btn-warning btn-casa-sm text-dark fw-bold border-0" href="/Adopciones/Solicitudes" style="background-color: #FF7A00;">
-                    📋 PANEL ADMIN: Ver TODAS las solicitudes
+                     PANEL ADMIN: Ver TODAS las solicitudes
                 </a>
             }
         </div>
@@ -64,7 +64,8 @@
                             <!-- CIUDADANO: Puede cancelar su solicitud si está pendiente -->
                             @if (!esAdmin && !esRescatista && s.Estado == "Pendiente")
                             {
-                                <form asp-action="Delete" method="post" onsubmit="return confirm('¿Cancelar tu solicitud?');">
+                                <form asp-action="Delete" method="post" 
+                                      onsubmit="return confirmarAccion('¿Cancelar tu solicitud de adopción?', null, this);">
                                     <input type="hidden" name="id" value="@s.Id" />
                                     <button type="submit" class="btn btn-outline-danger btn-sm w-100">❌ Cancelar mi solicitud</button>
                                 </form>
@@ -73,9 +74,10 @@
                             <!-- ADMIN: Puede eliminar desde aquí también -->
                             @if (esAdmin)
                             {
-                                <form asp-action="Delete" method="post" class="mt-2" onsubmit="return confirm('¿Eliminar?');">
+                                <form asp-action="Delete" method="post" class="mt-2" 
+                                      onsubmit="return confirmarAccion('¿Eliminar permanentemente esta solicitud?', null, this);">
                                     <input type="hidden" name="id" value="@s.Id" />
-                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">🗑️ Eliminar</button>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">️ Eliminar</button>
                                 </form>
                             }
                         </div>

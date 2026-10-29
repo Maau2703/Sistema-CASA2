@@ -448,6 +448,28 @@
       });
   }
 
+    // ✅ FUNCIÓN DE CONFIRMACIÓN PERSONALIZADA
+  function confirmarAccion(mensaje, urlDestino, formElement) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: mensaje,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (formElement) {
+          formElement.submit(); // Envía el formulario si existe
+        } else if (urlDestino) {
+          window.location.href = urlDestino; // Redirige si es un enlace
+        }
+      }
+    });
+    return false; // Previene la acción por defecto del navegador
+  }
   // Efecto scroll en navbar
   window.addEventListener('scroll', () => {
     const nav = document.querySelector('.casa-nav');

@@ -15,7 +15,6 @@ public class AdopcionesController : Controller
 
     public AdopcionesController(ApplicationDbContext context) => _context = context;
 
-    // INDEX: Dashboard personal
     public async Task<IActionResult> Index()
     {
         try
@@ -26,15 +25,12 @@ public class AdopcionesController : Controller
             bool esAdmin = userRole?.ToLower() == "administrador";
             bool esRescatista = userRole?.ToLower() == "rescatista";
 
-            Console.WriteLine($" DEBUG - Role: {userRole}, EsAdmin: {esAdmin}");
-
             var solicitudes = _context.SolicitudesAdopcion
                 .Include(s => s.Mascotas)
-                .Include(s => s.Ciudadanos)
-                    .ThenInclude(c => c.usuarios)
+                .Include(s => s.Ciudadanos).ThenInclude(c => c.usuarios)
                 .AsQueryable();
 
-            // Si NO es admin ni rescatista, filtrar solo sus solicitudes
+            // ✅ FILTRAR: Si NO es admin ni rescatista, solo ve SUS propias solicitudes
             if (!esAdmin && !esRescatista && !string.IsNullOrEmpty(userCi))
             {
                 var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.ci == userCi);
@@ -47,69 +43,49 @@ public class AdopcionesController : Controller
                     }
                 }
             }
+            // Si es admin o rescatista, ve TODAS las solicitudes (ya está configurado así)
 
             ViewBag.Solicitudes = await solicitudes.OrderByDescending(s => s.fecha).ToListAsync();
             ViewBag.EsAdmin = esAdmin;
             ViewBag.EsRescatista = esRescatista;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ ERROR INDEX ADOPCIONES: {ex.Message}");
-            ViewBag.Solicitudes = new List<SolicitudesAdopcion>();
-            ViewBag.EsAdmin = false;
-            ViewBag.EsRescatista = false;
-        }
+        catch (Exception ex) { Console.WriteLine($"❌ ERROR INDEX: {ex.Message}"); }
         return View();
     }
 
-    // ✅ Panel exclusivo para Admin/Rescatista
     public async Task<IActionResult> Solicitudes()
     {
         var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-
         bool esAdmin = userRole?.ToLower() == "administrador";
         bool esRescatista = userRole?.ToLower() == "rescatista";
 
-        Console.WriteLine($"🔍 DEBUG Solicitudes - Role: {userRole}, EsAdmin: {esAdmin}");
-
-        if (!esAdmin && !esRescatista)
+        if (!esAdmin && !esRescatista) 
         {
             TempData["Error"] = "No tienes permisos para acceder a este panel.";
             return RedirectToAction(nameof(Index));
         }
 
-        try
-        {
-            var todasSolicitudes = await _context.SolicitudesAdopcion
-                .Include(s => s.Mascotas)
-                .Include(s => s.Ciudadanos)
-                    .ThenInclude(c => c.usuarios)
-                .OrderByDescending(s => s.fecha)
-                .ToListAsync();
+        var todas = await _context.SolicitudesAdopcion
+            .Include(s => s.Mascotas)
+            .Include(s => s.Ciudadanos).ThenInclude(c => c.usuarios)
+            .OrderByDescending(s => s.fecha)
+            .ToListAsync();
+        
+        var agrupadas = todas
+            .GroupBy(s => s.mascotaId)
+            .Select(g => new { 
+                Mascota = g.First().Mascotas, 
+                Solicitudes = g.ToList() 
+            })
+            .ToList();
 
-            var solicitudesPorMascota = todasSolicitudes
-                .GroupBy(s => s.mascotaId)
-                .Select(g => new
-                {
-                    Mascota = g.First().Mascotas,
-                    Solicitudes = g.ToList()
-                })
-                .ToList();
+        ViewBag.SolicitudesPorMascota = agrupadas;
+        ViewBag.TotalSolicitudes = todas.Count;
+        ViewBag.Pendientes = todas.Count(s => s.Estado == "Pendiente");
+        ViewBag.Aprobadas = todas.Count(s => s.Estado == "Aprobada");
+        ViewBag.Rechazadas = todas.Count(s => s.Estado == "Rechazada");
 
-            ViewBag.SolicitudesPorMascota = solicitudesPorMascota;
-            ViewBag.TotalSolicitudes = todasSolicitudes.Count;
-            ViewBag.Pendientes = todasSolicitudes.Count(s => s.Estado == "Pendiente");
-            ViewBag.Aprobadas = todasSolicitudes.Count(s => s.Estado == "Aprobada");
-            ViewBag.Rechazadas = todasSolicitudes.Count(s => s.Estado == "Rechazada");
-
-            return View();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ ERROR PANEL SOLICITUDES: {ex.Message}");
-            TempData["Error"] = $"Error: {ex.Message}";
-            return RedirectToAction(nameof(Index));
-        }
+        return View();
     }
 
     [HttpPost]
@@ -133,13 +109,8 @@ public class AdopcionesController : Controller
             }
 
             var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.ci == userCi);
-            if (usuario == null)
-            {
-                TempData["Error"] = "Usuario no encontrado.";
-                return RedirectToAction("Index", "Mascotas");
-            }
-
             var ciudadano = await _context.Ciudadanos.FirstOrDefaultAsync(c => c.UsuarioId == usuario.Id);
+            
             if (ciudadano == null)
             {
                 ciudadano = new Ciudadanos { UsuarioId = usuario.Id, barrio = "Por definir" };
@@ -147,10 +118,7 @@ public class AdopcionesController : Controller
                 await _context.SaveChangesAsync();
             }
 
-            var solicitudPropia = await _context.SolicitudesAdopcion
-                .FirstOrDefaultAsync(s => s.mascotaId == mascotaId && 
-                                         s.CiudadanoId == ciudadano.Id && 
-                                         s.Estado == "Pendiente");
+            var solicitudPropia = await _context.SolicitudesAdopcion.FirstOrDefaultAsync(s => s.mascotaId == mascotaId && s.CiudadanoId == ciudadano.Id && s.Estado == "Pendiente");
 
             if (solicitudPropia != null)
             {
@@ -174,67 +142,61 @@ public class AdopcionesController : Controller
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ ERROR ADOPTAR: {ex.Message}");
+            Console.WriteLine($"💥 ERROR CRÍTICO EN ADOPTAR: {ex.Message}");
             TempData["Error"] = $"Error: {ex.Message}";
             return RedirectToAction("Index", "Mascotas");
         }
     }
 
+    // ✅ CORREGIDO: Con logs y redirección correcta
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CambiarEstado(int id, string nuevoEstado)
     {
-        try
+        Console.WriteLine($"🔄 DEBUG: Intentando cambiar estado. Id={id}, NuevoEstado={nuevoEstado}");
+        
+        var solicitud = await _context.SolicitudesAdopcion.Include(s => s.Mascotas).FirstOrDefaultAsync(s => s.Id == id);
+        if (solicitud == null) 
         {
-            var solicitud = await _context.SolicitudesAdopcion
-                .Include(s => s.Mascotas)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (solicitud == null) return NotFound();
-
-            solicitud.Estado = nuevoEstado;
-
-            if (nuevoEstado.ToLower() == "aprobada" && solicitud.Mascotas != null)
-            {
-                solicitud.Mascotas.Estado = "Adoptado";
-            }
-
-            await _context.SaveChangesAsync();
-            TempData["Success"] = $"Estado actualizado a: {nuevoEstado}";
-            return RedirectToAction("Solicitudes");
+            Console.WriteLine($"❌ DEBUG: Solicitud con Id {id} no encontrada.");
+            return NotFound();
         }
-        catch (Exception ex)
+
+        solicitud.Estado = nuevoEstado;
+        if (nuevoEstado.ToLower() == "aprobada" && solicitud.Mascotas != null) 
         {
-            Console.WriteLine($"❌ ERROR CAMBIAR ESTADO: {ex.Message}");
-            TempData["Error"] = $"Error: {ex.Message}";
-            return RedirectToAction("Solicitudes");
+            solicitud.Mascotas.Estado = "Adoptado";
+            Console.WriteLine($"✅ DEBUG: Mascota {solicitud.Mascotas.Nombre} marcada como Adoptado.");
         }
+
+        await _context.SaveChangesAsync();
+        TempData["Success"] = $"Estado actualizado a: {nuevoEstado}";
+        
+        Console.WriteLine($"✅ DEBUG: Cambio de estado exitoso. Redirigiendo a Solicitudes.");
+        return RedirectToAction("Solicitudes"); // ✅ Se queda en el panel
     }
-        // GET: Mostrar vista de confirmación de eliminación (necesario para que el formulario funcione bien)
-    [HttpGet]
-    public async Task<IActionResult> Delete(int? id)
-    {
-        if (id == null) return NotFound();
-        
-        var model = await _context.SolicitudesAdopcion
-            .Include(s => s.Mascotas)
-            .FirstOrDefaultAsync(s => s.Id == id);
-        
-        if (model == null) return NotFound();
-        
-        return View(model);
-    }
+
+    // ✅ CORREGIDO: Con logs y redirección correcta
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+        Console.WriteLine($"🗑️ DEBUG: Intentando eliminar solicitud. Id={id}");
+        
         var model = await _context.SolicitudesAdopcion.FindAsync(id);
         if (model != null)
         {
             _context.SolicitudesAdopcion.Remove(model);
             await _context.SaveChangesAsync();
-            TempData["Success"] = "Solicitud eliminada.";
+            TempData["Success"] = "Solicitud eliminada correctamente.";
+            Console.WriteLine($"✅ DEBUG: Solicitud {id} eliminada exitosamente.");
         }
-        return RedirectToAction(nameof(Index));
+        else
+        {
+            Console.WriteLine($"❌ DEBUG: No se encontró la solicitud {id} para eliminar.");
+        }
+        
+        // ✅ CORRECCIÓN CLAVE: Redirigir de vuelta al panel de Solicitudes, no al Index
+        return RedirectToAction("Solicitudes"); 
     }
 }

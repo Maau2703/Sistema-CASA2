@@ -1,9 +1,10 @@
 @{
     ViewData["Title"] = "Panel de Gestión de Adopciones";
     Layout = "_Layout";
-    var solicitudesPorMascota = ViewBag.SolicitudesPorMascota as List<dynamic>;
-    var total = ViewBag.TotalSolicitudes as int? ?? 0;
-    var pendientes = ViewBag.Pendientes as int? ?? 0;
+    
+    IEnumerable<dynamic> solicitudesPorMascota = ViewBag.SolicitudesPorMascota ?? new List<dynamic>();
+    int total = ViewBag.TotalSolicitudes ?? 0;
+    int pendientes = ViewBag.Pendientes ?? 0;
 }
 
 <header class="casa-hero casa-hero--page bg-primary text-white">
@@ -18,7 +19,6 @@
     @if (TempData["Success"] != null) { <div class="alert alert-success mt-3">@TempData["Success"]</div> }
     @if (TempData["Error"] != null) { <div class="alert alert-danger mt-3">@TempData["Error"]</div> }
 
-    <!-- ESTADÍSTICAS RÁPIDAS -->
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="card bg-light border-0 shadow-sm">
@@ -32,26 +32,26 @@
             <div class="card bg-warning border-0 shadow-sm">
                 <div class="card-body text-center">
                     <h3 class="mb-0 text-dark">@pendientes</h3>
-                    <small class="text-muted">Solicitudes Pendientes de revisión</small>
+                    <small class="text-muted">Solicitudes Pendientes</small>
                 </div>
             </div>
         </div>
     </div>
 
-    @if (solicitudesPorMascota != null && solicitudesPorMascota.Any())
+    @if (solicitudesPorMascota.Any())
     {
         foreach (var grupo in solicitudesPorMascota)
         {
             var mascota = grupo.Mascota;
-            var solicitudes = grupo.Solicitudes as List<Proyecto.Models.SolicitudesAdopcion>;
+            var solicitudes = (IEnumerable<Proyecto.Models.SolicitudesAdopcion>)grupo.Solicitudes;
 
             <div class="card mb-4 shadow-sm border-0">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="mb-0 fw-bold">🐾 @mascota?.Nombre</h5>
+                        <h5 class="mb-0 fw-bold">🐾 @(mascota?.Nombre ?? "Mascota desconocida")</h5>
                         <small class="text-muted">@mascota?.Especie | @mascota?.Edad | @mascota?.Color</small>
                     </div>
-                    <span class="badge bg-primary fs-6">@solicitudes.Count interesado(s)</span>
+                    <span class="badge bg-primary fs-6">@solicitudes.Count() interesado(s)</span>
                 </div>
                 
                 <div class="card-body p-0">
@@ -67,12 +67,12 @@
                                     <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                                                        <tbody>
                                 @foreach (var s in solicitudes)
                                 {
                                     var ciudadano = s.Ciudadanos;
                                     var usuario = ciudadano?.usuarios;
-
+                                    
                                     var badgeClass = s.Estado switch {
                                         "Pendiente" => "bg-warning text-dark",
                                         "Aprobada" => "bg-success",
@@ -83,43 +83,46 @@
 
                                     <tr>
                                         <td>
-                                            <strong>@(usuario?.nombre ?? "Desconocido")</strong><br>
+                                            <strong>@(usuario?.nombre ?? "N/A")</strong><br>
                                             <small class="text-muted">CI: @(usuario?.ci ?? "N/A")</small>
                                         </td>
                                         <td>
                                             <small>📧 @(usuario?.Email ?? "N/A")<br>📱 @(usuario?.celular ?? "N/A")</small>
                                         </td>
                                         <td>@(ciudadano?.barrio ?? "N/A")</td>
-                                        <td><small>@s.fecha.ToString("dd/MM/yyyy")</small></td>
+                                        <td><small>@s.fecha.ToString("dd/MM/yyyy HH:mm")</small></td>
                                         <td><span class="badge @badgeClass">@s.Estado</span></td>
                                         <td class="text-end">
-                                            @if (s.Estado == "Pendiente")
-                                            {
-                                                <div class="btn-group btn-group-sm">
-                                                    <form asp-action="CambiarEstado" method="post" class="d-inline">
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                @if (s.Estado == "Pendiente")
+                                                {
+                                                    <!-- ✅ BOTÓN APROBAR (Con action explícito y log) -->
+                                                    <form action="/Adopciones/CambiarEstado" method="post" class="d-inline" 
+                                                          onsubmit="console.log('📤 Enviando a:', this.action, 'Método:', this.method); return confirmarAccion('¿Aprobar esta solicitud? La mascota se marcará como Adoptada.', null, this);">
+                                                        @Html.AntiForgeryToken()
                                                         <input type="hidden" name="id" value="@s.Id" />
                                                         <input type="hidden" name="nuevoEstado" value="Aprobada" />
-                                                        <button type="submit" class="btn btn-success" title="Aprobar" onclick="return confirm('¿Aprobar? La mascota se marcará como Adoptada.');">✅</button>
+                                                        <button type="submit" class="btn btn-success btn-sm" title="Aprobar">✅</button>
                                                     </form>
-                                                    <form asp-action="CambiarEstado" method="post" class="d-inline">
+                                                    
+                                                    <!-- ✅ BOTÓN RECHAZAR (Con action explícito y log) -->
+                                                    <form action="/Adopciones/CambiarEstado" method="post" class="d-inline"
+                                                          onsubmit="console.log('📤 Enviando a:', this.action, 'Método:', this.method); return confirmarAccion('¿Rechazar esta solicitud?', null, this);">
+                                                        @Html.AntiForgeryToken()
                                                         <input type="hidden" name="id" value="@s.Id" />
                                                         <input type="hidden" name="nuevoEstado" value="Rechazada" />
-                                                        <button type="submit" class="btn btn-danger" title="Rechazar" onclick="return confirm('¿Rechazar esta solicitud?');">❌</button>
+                                                        <button type="submit" class="btn btn-danger btn-sm" title="Rechazar">❌</button>
                                                     </form>
-                                                </div>
-                                            }
-                                            else
-                                            {
-                                                <form asp-action="CambiarEstado" method="post" class="d-inline">
+                                                }
+                                                
+                                                <!-- ✅ BOTÓN DE ELIMINAR (Con action explícito y log) -->
+                                                <form action="/Adopciones/Delete" method="post" class="d-inline" 
+                                                      onsubmit="console.log('📤 Enviando a:', this.action, 'Método:', this.method); return confirmarAccion('¿Eliminar permanentemente esta solicitud?', null, this);">
+                                                    @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@s.Id" />
-                                                    <select name="nuevoEstado" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 130px;">
-                                                        <option value="Pendiente" selected="@(s.Estado == "Pendiente")">Pendiente</option>
-                                                        <option value="En proceso" selected="@(s.Estado == "En proceso")">En proceso</option>
-                                                        <option value="Aprobada" selected="@(s.Estado == "Aprobada")">Aprobada</option>
-                                                        <option value="Rechazada" selected="@(s.Estado == "Rechazada")">Rechazada</option>
-                                                    </select>
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar">🗑️</button>
                                                 </form>
-                                            }
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -134,6 +137,7 @@
     {
         <div class="alert alert-info text-center">
             <h4>No hay solicitudes registradas en el sistema</h4>
+            <p class="mb-0">Las solicitudes aparecerán aquí cuando los ciudadanos postulen a las mascotas.</p>
         </div>
     }
 </div>

@@ -76,6 +76,7 @@ app.UseRouting();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapControllerRoute(
     name: "default",
@@ -83,9 +84,23 @@ app.MapControllerRoute(
 
 app.MapControllers();
 
+// ✅ CORRECCIÓN CLAVE: Crear tablas automáticamente antes de ejecutar el Seed
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    
+    try
+    {
+        Console.WriteLine("🔄 Verificando/Creando base de datos en Turso...");
+        db.Database.EnsureCreated();
+        Console.WriteLine("✅ Base de datos lista. Tablas creadas o verificadas.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al verificar/crear la BD: {ex.Message}");
+    }
+
+    // Ahora sí, ejecutar el seed con las tablas ya existentes
     await DataSeeder.SeedAsync(db);
 }
 

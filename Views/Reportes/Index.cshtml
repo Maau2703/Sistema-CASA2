@@ -1,7 +1,13 @@
+@using Proyecto.Helpers; <!-- ✅ IMPORTANTE: Importar el Helper aquí -->
+
 @{ 
     ViewData["Title"] = "Reportes de Animales"; 
     Layout = "_Layout"; 
     var reportes = ViewBag.Reportes as List<Proyecto.Models.Reportes>; 
+    
+    var esAdmin = ViewBag.EsAdmin as bool? ?? false;
+    var esRescatista = ViewBag.EsRescatista as bool? ?? false;
+    var ciudadanoIdActual = ViewBag.CiudadanoId as int?;
 }
 
 <header class="casa-hero casa-hero--page">
@@ -14,12 +20,26 @@
 
 <div class="container casa-overlap">
     @if(TempData["Success"] != null) {
-        <div class="alert alert-success mt-3">@TempData["Success"]</div>
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if(TempData["Error"] != null) {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
     
     <div class="row g-4 mt-2">
         @if(reportes != null && reportes.Any()) {
             @foreach(var r in reportes) {
+                
+                // ✅ USO DEL HELPER EN LA VISTA: Código limpio y legible
+                string rolParaHelper = esAdmin ? "Administrador" : (esRescatista ? "Rescatista" : null);
+                bool puedeEditar = PermissionHelper.CanManageReport(rolParaHelper, ciudadanoIdActual, r.CiudadanoId);
+
                 <div class="col-md-6 col-lg-4">
                     <div class="casa-card h-100">
                         <div class="casa-card__body">
@@ -44,14 +64,31 @@
                             <div class="mb-2"><small class="text-muted">📍 @r.Ubicaion</small></div>
                             <div class="mb-2"><small class="text-muted">📅 @r.Fecha.ToString("dd/MM/yyyy")</small></div>
                             <p class="small text-muted mb-3">@r.Descripcion</p>
+
+                            <!-- ✅ MOSTRAR COMENTARIO DE RESOLUCIÓN SI EXISTE -->
+                            @if (!string.IsNullOrEmpty(r.ComentarioResolucion))
+                            {
+                                <div class="alert alert-success small mb-3 border-start border-4 border-success">
+                                    <strong>📝 Nota de resolución:</strong><br>
+                                    @r.ComentarioResolucion
+                                </div>
+                            }
                             
-                            <!-- BOTONES DE ACCIÓN -->
+                            <!-- ✅ BOTONES DE ACCIÓN CON PERMISOS -->
                             <div class="d-flex gap-2 mt-3">
-                                <a href="/Reportes/Edit/@r.Id" class="btn btn-primary btn-sm flex-grow-1">✏️ Actualizar estado</a>
-                                <form asp-action="Delete" asp-controller="Reportes" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este reporte?');">
-                                    <input type="hidden" name="id" value="@r.Id" />
-                                    <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-                                </form>
+                                @if (puedeEditar)
+                                {
+                                    <a href="/Reportes/Edit/@r.Id" class="btn btn-primary btn-sm flex-grow-1">✏️ Actualizar estado</a>
+                                }
+                                
+                                @if (esAdmin)
+                                {
+                                    <form asp-action="Delete" asp-controller="Reportes" method="post" class="d-inline" 
+                                          onsubmit="return confirmarAccion('¿Estás seguro de eliminar este reporte permanentemente?', null, this);">
+                                        <input type="hidden" name="id" value="@r.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar reporte">🗑️</button>
+                                    </form>
+                                }
                             </div>
                         </div>
                     </div>

@@ -40,9 +40,10 @@
             
             <div class="d-flex gap-2 mt-auto d-none crud-buttons" data-id="@item.Id">
               <a href="/Establecimientos/Edit/@item.Id" class="btn btn-sm btn-outline-primary flex-grow-1 edit-btn">✏️ Editar</a>
-              <form asp-action="Delete" method="post" class="d-inline delete-btn" onsubmit="return confirm('¿Eliminar este establecimiento?');">
+              <form asp-action="Delete" method="post" class="d-inline delete-btn" 
+                    onsubmit="return confirmarAccion('¿Eliminar este establecimiento permanentemente?', null, this);">
                 <input type="hidden" name="id" value="@item.Id" />
-                <button type="submit" class="btn btn-sm btn-outline-danger">️</button>
+                <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
               </form>
             </div>
           </div>
@@ -61,7 +62,6 @@
 @section Scripts {
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Leer usuario desde localStorage
     const userStr = localStorage.getItem('casa.user');
     let user = null;
     try { user = userStr ? JSON.parse(userStr) : null; } catch(e) {}
@@ -71,9 +71,6 @@
     const esRescatista = rol === 'rescatista';
     const puedeEditar = esAdmin || esRescatista;
 
-    console.log('🔍 Rol detectado:', rol, '| Puede editar:', puedeEditar);
-
-    // Mostrar botones de crear si tiene permisos
     if (puedeEditar) {
       const btnCrear = document.getElementById('btn-crear-establecimiento');
       const btnPrimero = document.getElementById('btn-crear-primero');
@@ -81,14 +78,13 @@
       if (btnPrimero) btnPrimero.classList.remove('d-none');
     }
 
-    // Mostrar botones de editar/eliminar en cada tarjeta
     document.querySelectorAll('.crud-buttons').forEach(container => {
       const deleteBtn = container.querySelector('.delete-btn');
       if (esAdmin) {
         container.classList.remove('d-none');
       } else if (esRescatista) {
         container.classList.remove('d-none');
-        if (deleteBtn) deleteBtn.remove(); // Solo admin puede eliminar
+        if (deleteBtn) deleteBtn.remove();
       }
     });
   });

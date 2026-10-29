@@ -170,10 +170,33 @@
       const boton = $('le-enviar'), err = $('le-error');
       boton.disabled = true; err.classList.add('d-none');
       
+      // Mostrar loading
+      Swal.fire({
+        title: 'Iniciando sesión...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
+      
       try {
         await CASA.auth.login($('le-email').value.trim(), $('le-pass').value, $('le-recordar').checked);
-        window.location.href = destino();
+        Swal.close();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Bienvenido!',
+          text: 'Has iniciado sesión correctamente',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        setTimeout(() => {
+          window.location.href = destino();
+        }, 1500);
       } catch (e) {
+        Swal.close();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de acceso',
+          text: e.message || 'Credenciales incorrectas'
+        });
         err.textContent = e.message;
         err.classList.remove('d-none');
         boton.disabled = false;
@@ -195,6 +218,13 @@
       const boton = $('lc-enviar'), err = $('lc-error');
       boton.disabled = true; err.classList.add('d-none');
       
+      // Mostrar loading
+      Swal.fire({
+        title: 'Creando cuenta...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
+      
       try {
         await CASA.auth.register({
           nombre: $('lc-nombre').value.trim(),
@@ -205,8 +235,24 @@
           distritoId: $('lc-distrito').value ? Number($('lc-distrito').value) : null,
           barrio: $('lc-barrio').value.trim() || null
         });
-        window.location.href = destino();
+        Swal.close();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Cuenta creada!',
+          text: 'Tu cuenta ha sido registrada exitosamente',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        setTimeout(() => {
+          window.location.href = destino();
+        }, 1500);
       } catch (e) {
+        Swal.close();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al registrar',
+          text: e.message || 'No se pudo crear la cuenta'
+        });
         err.textContent = e.message;
         err.classList.remove('d-none');
         boton.disabled = false;

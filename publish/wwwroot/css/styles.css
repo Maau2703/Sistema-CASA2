@@ -1,0 +1,1118 @@
+/* ==========================================================================
+   Proyecto C.A.S.A. — Rescate, adopción y gestión animal · Sucre, Bolivia
+   Hoja de estilos principal (se carga DESPUÉS de Bootstrap 5)
+   --------------------------------------------------------------------------
+   Idea visual: la "placa de collar". El nombre de cada mascota va en una
+   placa con agujerito y la cinta de color del distrito hace de collar.
+   Paleta: naranja vibrante + azul cobalto sobre fondos limpios.
+   Para ajustar los colores a tu imagen de referencia, cambia SOLO los
+   valores de la sección :root.
+   ========================================================================== */
+
+/* ---------- 1. Tokens ---------------------------------------------------- */
+:root {
+  /* Naranja vibrante */
+  --casa-orange-50:  #FFF6EC;
+  --casa-orange-100: #FFE6CC;
+  --casa-orange-300: #FFB066;
+  --casa-orange-500: #FF7A00;   /* principal */
+  --casa-orange-600: #E86300;
+  --casa-orange-800: #8F3D00;   /* texto sobre fondos naranja claro */
+
+  /* Azul cobalto / real */
+  --casa-blue-50:  #F2F6FF;
+  --casa-blue-100: #DCE6FF;
+  --casa-blue-300: #7FA0F0;
+  --casa-blue-600: #0B47C9;     /* principal */
+  --casa-blue-700: #08339A;
+  --casa-blue-900: #0A1F5C;
+
+  /* Neutros */
+  --casa-white: #FFFFFF;
+  --casa-ink:   #12234F;        /* texto */
+  --casa-muted: #5B6B8C;
+  --casa-line:  #E3E9F6;
+  --casa-bg:    #FBFCFF;
+
+  /* Solo para estados negativos (rechazado, cerrado) */
+  --casa-danger-50:  #FDECEF;
+  --casa-danger-700: #A3223C;
+
+  /* Forma y sombra */
+  --casa-r-sm: 12px;
+  --casa-r-md: 18px;
+  --casa-r-lg: 28px;
+  --casa-r-pill: 999px;
+  --casa-shadow-sm: 0 2px 6px rgba(18, 35, 79, .06);
+  --casa-shadow-md: 0 10px 28px rgba(18, 35, 79, .10);
+  --casa-shadow-pop: 0 6px 0 var(--casa-blue-700);
+
+  /* Tipografía */
+  --casa-font-display: "Fredoka", "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --casa-font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Huella de patita (SVG embebido, se usa como patrón) */
+  --casa-paw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 68 64'%3E%3Cg fill='%23ffffff'%3E%3Ccircle cx='10' cy='28' r='7'/%3E%3Ccircle cx='25' cy='14' r='7'/%3E%3Ccircle cx='43' cy='14' r='7'/%3E%3Ccircle cx='58' cy='28' r='7'/%3E%3Cellipse cx='34' cy='46' rx='19' ry='15'/%3E%3C/g%3E%3C/svg%3E");
+
+  /* Puentes hacia Bootstrap 5 */
+  --bs-body-font-family: var(--casa-font-body);
+  --bs-body-color: var(--casa-ink);
+  --bs-body-bg: var(--casa-bg);
+  --bs-link-color: var(--casa-blue-600);
+  --bs-link-hover-color: var(--casa-blue-700);
+  --bs-border-color: var(--casa-line);
+  --bs-border-radius: var(--casa-r-sm);
+  --bs-border-radius-lg: var(--casa-r-md);
+  --bs-border-radius-pill: var(--casa-r-pill);
+}
+
+/* ---------- 2. Base ------------------------------------------------------ */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--casa-font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--casa-ink);
+  background: var(--casa-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6,
+.casa-display {
+  font-family: var(--casa-font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  color: var(--casa-ink);
+}
+
+h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
+h3 { font-size: 1.35rem; }
+
+p { max-width: 68ch; }
+.text-muted, .casa-muted { color: var(--casa-muted) !important; }
+
+a { text-underline-offset: 3px; }
+
+:focus-visible {
+  outline: 3px solid var(--casa-orange-500);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::selection { background: var(--casa-orange-100); color: var(--casa-ink); }
+
+.casa-main { min-height: 60vh; padding-bottom: 4rem; }
+
+/* ---------- 3. Navegación ------------------------------------------------ */
+.casa-nav {
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--casa-line);
+  padding-block: .6rem;
+}
+
+.casa-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  font-family: var(--casa-font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--casa-blue-600);
+  text-decoration: none;
+  letter-spacing: .02em;
+}
+.casa-brand:hover { color: var(--casa-blue-700); }
+.casa-brand__logo {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50% 50% 50% 14px;
+  background: var(--casa-orange-500);
+  font-size: 1.3rem;
+  transform: rotate(-6deg);
+}
+.casa-brand small {
+  display: block;
+  font-family: var(--casa-font-body);
+  font-weight: 600;
+  font-size: .68rem;
+  letter-spacing: 0;
+  color: var(--casa-muted);
+  line-height: 1;
+  margin-top: .15rem;
+}
+
+.casa-nav .nav-link {
+  font-weight: 700;
+  color: var(--casa-ink);
+  border-radius: var(--casa-r-pill);
+  padding: .5rem 1rem;
+  margin-inline: .1rem;
+}
+.casa-nav .nav-link:hover { background: var(--casa-blue-50); color: var(--casa-blue-700); }
+.casa-nav .nav-link.active {
+  background: var(--casa-blue-600);
+  color: var(--casa-white);
+}
+.casa-nav .navbar-toggler { border: 2px solid var(--casa-blue-600); border-radius: var(--casa-r-sm); }
+
+/* ---------- 4. Botones --------------------------------------------------- */
+.btn-casa,
+.btn-casa-blue,
+.btn-casa-ghost {
+  --_bg: var(--casa-orange-500);
+  --_fg: var(--casa-ink);
+  --_edge: var(--casa-orange-800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  font-family: var(--casa-font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  padding: .7rem 1.5rem;
+  border: 0;
+  border-radius: var(--casa-r-pill);
+  background: var(--_bg);
+  color: var(--_fg);
+  box-shadow: 0 4px 0 var(--_edge);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+}
+.btn-casa:hover,
+.btn-casa-blue:hover,
+.btn-casa-ghost:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--_edge);
+  color: var(--_fg);
+}
+.btn-casa:active,
+.btn-casa-blue:active,
+.btn-casa-ghost:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--_edge);
+}
+.btn-casa:disabled, .btn-casa-blue:disabled, .btn-casa-ghost:disabled,
+.btn-casa[disabled], .btn-casa-blue[disabled] {
+  opacity: .55;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.btn-casa-blue { --_bg: var(--casa-blue-600); --_fg: #fff; --_edge: var(--casa-blue-900); }
+.btn-casa-ghost {
+  --_bg: var(--casa-white);
+  --_fg: var(--casa-blue-700);
+  --_edge: var(--casa-blue-100);
+  border: 2px solid var(--casa-blue-100);
+}
+.btn-casa-sm { font-size: .92rem; padding: .45rem 1rem; box-shadow: 0 3px 0 var(--_edge); }
+.btn-casa-lg { font-size: 1.2rem; padding: .9rem 2rem; }
+
+/* Botón dentro del hero (fondo azul): el sombreado usa un azul más oscuro */
+.casa-hero .btn-casa       { --_edge: #B34F00; }
+.casa-hero .btn-casa-ghost { --_bg: transparent; --_fg: #fff; --_edge: rgba(255,255,255,.25); border-color: rgba(255,255,255,.55); }
+
+/* ---------- 5. Hero ------------------------------------------------------ */
+.casa-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  color: #fff;
+  background: var(--casa-blue-600);
+  border-radius: 0 0 var(--casa-r-lg) var(--casa-r-lg);
+  padding: clamp(3rem, 8vw, 6rem) 0 clamp(5rem, 10vw, 8rem);
+}
+.casa-hero::before {            /* patrón de patitas */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--casa-paw);
+  background-size: 74px;
+  opacity: .07;
+  transform: rotate(-12deg) scale(1.4);
+}
+.casa-hero::after {             /* mancha naranja */
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -8%;
+  top: -30%;
+  width: min(46vw, 520px);
+  aspect-ratio: 1;
+  background: var(--casa-orange-500);
+  border-radius: 58% 42% 55% 45% / 48% 56% 44% 52%;
+}
+.casa-hero h1, .casa-hero h2 { color: #fff; }
+.casa-hero:not(.casa-hero--page) .container > h1 { max-width: 14ch; }   /* no invade la mancha naranja */
+.casa-hero .lead { color: rgba(255,255,255,.88); font-size: 1.2rem; max-width: 46ch; }
+
+.casa-hero--page { padding: 2.5rem 0 4.5rem; }
+.casa-hero--page::after { width: min(30vw, 300px); top: -45%; }
+.casa-hero--page h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin-bottom: .3rem; }
+.casa-hero--page p { margin: 0; color: rgba(255,255,255,.88); }
+
+.casa-hero__stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .5rem;
+  background: rgba(255,255,255,.12);
+  border: 2px solid rgba(255,255,255,.25);
+  border-radius: var(--casa-r-pill);
+  padding: .35rem 1rem;
+  font-weight: 700;
+}
+.casa-hero__stat strong { font-family: var(--casa-font-display); font-size: 1.4rem; color: var(--casa-orange-300); }
+
+/* Entrada del hero: único movimiento automático del sitio */
+@keyframes casa-pop-in {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+.casa-hero .container > * { animation: casa-pop-in .5s cubic-bezier(.2,.8,.3,1) both; }
+.casa-hero .container > *:nth-child(2) { animation-delay: .08s; }
+.casa-hero .container > *:nth-child(3) { animation-delay: .16s; }
+.casa-hero .container > *:nth-child(4) { animation-delay: .24s; }
+
+/* Elementos que "suben" para solapar el hero */
+.casa-overlap { margin-top: -3.5rem; position: relative; z-index: 2; }
+
+/* ---------- 6. Secciones / titulares ------------------------------------ */
+.casa-section { padding-block: 3rem; }
+.casa-section-title { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.25rem; }
+.casa-section-title::after {
+  content: "";
+  flex: 1;
+  height: 0;
+  border-top: 3px dotted var(--casa-orange-300);
+  min-width: 2rem;
+}
+
+/* ---------- 7. Accesos directos (home) ---------------------------------- */
+.casa-quick {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  height: 100%;
+  padding: 1.4rem 1.4rem 1.2rem;
+  background: var(--casa-white);
+  border: 2px solid var(--casa-line);
+  border-radius: var(--casa-r-lg);
+  box-shadow: var(--casa-shadow-md);
+  color: var(--casa-ink);
+  text-decoration: none;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.casa-quick:hover { transform: translateY(-4px); border-color: var(--casa-orange-500); color: var(--casa-ink); }
+.casa-quick__icon {
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  font-size: 1.8rem;
+  border-radius: 18px 18px 18px 6px;
+  background: var(--casa-orange-100);
+  margin-bottom: .4rem;
+}
+.casa-quick:nth-child(even) .casa-quick__icon,
+.col:nth-child(even) .casa-quick__icon { background: var(--casa-blue-100); }
+.casa-quick h3 { margin: 0; font-size: 1.25rem; }
+.casa-quick p { margin: 0; font-size: .95rem; color: var(--casa-muted); }
+
+/* Cifras de la home */
+.casa-counter {
+  text-align: center;
+  padding: 1.2rem 1rem;
+  background: var(--casa-white);
+  border-radius: var(--casa-r-md);
+  border: 2px solid var(--casa-line);
+}
+.casa-counter strong {
+  display: block;
+  font-family: var(--casa-font-display);
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--casa-blue-600);
+}
+.casa-counter span { font-weight: 700; color: var(--casa-muted); font-size: .95rem; }
+
+/* Banda de llamada a la acción */
+.casa-cta {
+  position: relative;
+  overflow: hidden;
+  background: var(--casa-orange-500);
+  border-radius: var(--casa-r-lg);
+  padding: 2.5rem clamp(1.5rem, 5vw, 3.5rem);
+  color: var(--casa-ink);
+}
+.casa-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--casa-paw);
+  background-size: 70px;
+  opacity: .12;
+  transform: rotate(10deg) scale(1.3);
+  pointer-events: none;
+}
+.casa-cta > * { position: relative; }
+.casa-cta h2 { margin-bottom: .4rem; }
+
+/* ---------- 8. Filtros --------------------------------------------------- */
+.casa-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+  background: var(--casa-white);
+  border: 2px solid var(--casa-line);
+  border-radius: var(--casa-r-lg);
+  padding: .9rem 1.1rem;
+  box-shadow: var(--casa-shadow-md);
+}
+.casa-filters .form-control,
+.casa-filters .form-select { max-width: 220px; }
+.casa-filters .casa-search { flex: 1 1 220px; max-width: none; }
+
+.casa-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .8rem;
+  border-radius: var(--casa-r-pill);
+  border: 2px solid var(--casa-line);
+  background: var(--casa-white);
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--casa-ink);
+  cursor: pointer;
+  transition: background-color .12s ease, border-color .12s ease;
+}
+.casa-chip:hover { border-color: var(--casa-blue-300); }
+.casa-chip.is-active { background: var(--casa-blue-600); border-color: var(--casa-blue-600); color: #fff; }
+
+/* ---------- 9. Tarjeta de mascota (placa de collar) --------------------- */
+.pet-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--casa-white);
+  border: 2px solid var(--casa-line);
+  border-radius: var(--casa-r-lg);
+  box-shadow: var(--casa-shadow-sm);
+  overflow: hidden;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.pet-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--casa-shadow-md);
+  border-color: var(--casa-orange-300);
+}
+
+.pet-card__photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, var(--casa-orange-100), var(--casa-blue-100));
+  overflow: hidden;
+}
+.pet-card__photo img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; display: block; }
+.pet-card__photo .pet-card__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 4.5rem;
+}
+.pet-card__ribbon {          /* cinta del distrito, como un collar */
+  z-index: 2;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  background: var(--ribbon, var(--casa-orange-500));
+}
+.pet-card__status { position: absolute; z-index: 2; top: .8rem; right: .8rem; }
+
+.pet-card__body { display: flex; flex-direction: column; gap: .7rem; padding: 0 1.2rem 1.2rem; flex: 1; }
+
+.pet-tag {                   /* la placa */
+  position: relative;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  margin: -1.1rem 0 0 -.2rem;
+  padding: .45rem 1.1rem .45rem .8rem;
+  background: var(--casa-orange-500);
+  color: var(--casa-ink);
+  font-family: var(--casa-font-display);
+  font-weight: 600;
+  font-size: 1.3rem;
+  line-height: 1.1;
+  border-radius: 8px 22px 22px 8px;
+  box-shadow: 0 3px 0 var(--casa-orange-800);
+  transform: rotate(-2deg);
+  z-index: 3;
+}
+.pet-tag::before {           /* agujero de la placa */
+  content: "";
+  width: .7rem;
+  height: .7rem;
+  border-radius: 50%;
+  background: var(--casa-white);
+  box-shadow: inset 0 2px 0 rgba(18,35,79,.25);
+  flex: none;
+}
+
+.pet-card__meta { display: flex; flex-wrap: wrap; gap: .4rem; }
+.pet-trait {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .2rem .65rem;
+  background: var(--casa-blue-50);
+  color: var(--casa-blue-700);
+  border-radius: var(--casa-r-pill);
+  font-size: .85rem;
+  font-weight: 700;
+}
+.pet-card__desc {
+  margin: 0;
+  color: var(--casa-muted);
+  font-size: .96rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pet-card__foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding-top: .6rem;
+  border-top: 2px dotted var(--casa-line);
+}
+.pet-card__district { display: inline-flex; align-items: center; gap: .4rem; font-size: .88rem; font-weight: 700; color: var(--casa-muted); }
+.ribbon-dot {
+  display: inline-block;
+  width: .85rem;
+  height: .85rem;
+  border-radius: 50%;
+  background: var(--ribbon, var(--casa-orange-500));
+  border: 2px solid var(--casa-white);
+  box-shadow: 0 0 0 2px var(--casa-line);
+  flex: none;
+}
+
+/* Tarjeta genérica (establecimientos, contratos, etc.) */
+.casa-card {
+  position: relative;
+  height: 100%;
+  background: var(--casa-white);
+  border: 2px solid var(--casa-line);
+  border-radius: var(--casa-r-lg);
+  box-shadow: var(--casa-shadow-sm);
+  padding: 1.3rem 1.3rem 1.2rem;
+}
+.casa-card__icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.6rem;
+  border-radius: 16px 16px 16px 5px;
+  background: var(--casa-blue-100);
+  flex: none;
+}
+.casa-card__icon--orange { background: var(--casa-orange-100); }
+.casa-card h3 { margin: 0; font-size: 1.2rem; }
+.casa-card ul.casa-facts { list-style: none; margin: .8rem 0 0; padding: 0; display: grid; gap: .35rem; font-size: .95rem; }
+.casa-facts li { display: flex; gap: .55rem; align-items: baseline; }
+.casa-facts li > span:first-child { width: 1.3rem; text-align: center; flex: none; }
+
+.stars { color: var(--casa-orange-500); letter-spacing: 2px; font-size: 1rem; white-space: nowrap; }
+.stars .off { color: var(--casa-line); }
+
+/* Contrato de adopción: ficha con borde punteado, como un certificado */
+.casa-contract {
+  position: relative;
+  background: var(--casa-white);
+  border: 3px dashed var(--casa-blue-300);
+  border-radius: var(--casa-r-md);
+  padding: 1.1rem 1.25rem;
+  height: 100%;
+}
+.casa-contract__serial { font-family: var(--casa-font-display); font-size: 1.15rem; color: var(--casa-blue-700); word-break: break-all; }
+.casa-contract__sign {
+  margin-top: .6rem;
+  padding-top: .5rem;
+  border-top: 2px solid var(--casa-line);
+  font-style: italic;
+  color: var(--casa-muted);
+  font-size: .95rem;
+}
+
+.casa-contract__sign img { max-height: 64px; max-width: 100%; display: block; }
+
+/* ---------- 10. Badges de estado ---------------------------------------- */
+.casa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .25rem .75rem;
+  border-radius: var(--casa-r-pill);
+  font-size: .82rem;
+  font-weight: 800;
+  line-height: 1.3;
+  background: var(--casa-line);
+  color: var(--casa-ink);
+  white-space: nowrap;
+}
+.casa-badge::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
+
+.casa-badge.is-ok      { background: var(--casa-blue-100);   color: var(--casa-blue-700); }   /* disponible, aprobada, activo */
+.casa-badge.is-wait    { background: var(--casa-orange-100); color: var(--casa-orange-800); } /* pendiente, en rescate */
+.casa-badge.is-done    { background: var(--casa-blue-600);   color: #fff; }                   /* adoptado, completado */
+.casa-badge.is-bad     { background: var(--casa-danger-50);  color: var(--casa-danger-700); } /* rechazada, cerrado */
+.casa-badge.is-neutral { background: var(--casa-line);       color: var(--casa-ink); }
+
+/* ---------- 11. Tablas --------------------------------------------------- */
+.casa-table-wrap {
+  background: var(--casa-white);
+  border: 2px solid var(--casa-line);
+  border-radius: var(--casa-r-lg);
+  box-shadow: var(--casa-shadow-sm);
+  overflow: hidden;
+}
+.casa-table-wrap .table-responsive { margin: 0; }
+.casa-table {
+  --bs-table-bg: transparent;
+  margin: 0;
+  vertical-align: middle;
+}
+.casa-table thead th {
+  background: var(--casa-blue-50);
+  color: var(--casa-blue-700);
+  font-family: var(--casa-font-display);
+  font-weight: 600;
+  font-size: .95rem;
+  border-bottom: 3px solid var(--casa-blue-100);
+  padding: .9rem 1rem;
+  white-space: nowrap;
+}
+.casa-table td { padding: .85rem 1rem; border-color: var(--casa-line); }
+.casa-table tbody tr:hover > * { background: var(--casa-orange-50); }
+.casa-table tbody tr:last-child td { border-bottom: 0; }
+.casa-table--tight thead th, .casa-table--tight td { padding: .75rem .6rem; font-size: .95rem; }
+.casa-table .cell-pet { display: flex; align-items: center; gap: .7rem; font-weight: 800; }
+.casa-table .cell-pet img,
+.casa-table .cell-pet .thumb-fallback {
+  width: 2.6rem; height: 2.6rem; border-radius: 50%; object-fit: cover; flex: none;
+  background: var(--casa-orange-100); display: grid; place-items: center; font-size: 1.3rem;
+}
+
+/* ---------- 12. Formularios --------------------------------------------- */
+.casa-form-card {
+  position: relative;
+  background: var(--casa-white);
+  border: 2px solid var(--casa-line);
+  border-radius: var(--casa-r-lg);
+  box-shadow: var(--casa-shadow-md);
+  padding: 2rem 1.6rem 1.6rem;
+}
+.casa-form-card::before {            /* cinta naranja superior */
+  content: "";
+  position: absolute;
+  left: 1.6rem;
+  right: 1.6rem;
+  top: -2px;
+  height: 8px;
+  border-radius: 0 0 8px 8px;
+  background: repeating-linear-gradient(90deg, var(--casa-orange-500) 0 22px, var(--casa-blue-600) 22px 44px);
+}
+.casa-form-card h2 { font-size: 1.5rem; }
+
+.casa-form-card .form-label, .modal .form-label { font-weight: 800; margin-bottom: .3rem; }
+.form-control, .form-select {
+  border: 2px solid var(--casa-line);
+  border-radius: var(--casa-r-md);
+  padding: .65rem 1rem;
+  background-color: var(--casa-white);
+  color: var(--casa-ink);
+}
+.form-control::placeholder { color: #98A4C0; }
+.form-control:focus, .form-select:focus {
+  border-color: var(--casa-orange-500);
+  box-shadow: 0 0 0 .25rem rgba(255, 122, 0, .2);
+  background-color: var(--casa-white);
+}
+.form-text { color: var(--casa-muted); }
+.was-validated .form-control:invalid, .form-control.is-invalid { border-color: var(--casa-danger-700); }
+
+/* ---------- 13. Mapa ----------------------------------------------------- */
+.casa-map-shell {
+  position: relative;
+  border: 4px solid var(--casa-white);
+  border-radius: var(--casa-r-lg);
+  box-shadow: 0 0 0 2px var(--casa-line), var(--casa-shadow-md);
+  overflow: hidden;
+  background: var(--casa-blue-50);
+}
+#map { width: 100%; height: clamp(420px, 68vh, 680px); z-index: 1; }
+
+.casa-map-legend {
+  background: var(--casa-white);
+  border: 2px solid var(--casa-line);
+  border-radius: var(--casa-r-lg);
+  padding: 1.1rem 1.2rem;
+  box-shadow: var(--casa-shadow-sm);
+}
+.casa-map-legend h3 { font-size: 1.1rem; margin-bottom: .7rem; }
+.casa-legend-item {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  width: 100%;
+  padding: .45rem .6rem;
+  border: 0;
+  border-radius: var(--casa-r-sm);
+  background: transparent;
+  text-align: left;
+  font-weight: 700;
+  color: var(--casa-ink);
+  cursor: pointer;
+}
+.casa-legend-item:hover { background: var(--casa-blue-50); }
+.casa-legend-item .count { margin-left: auto; color: var(--casa-muted); font-size: .85rem; }
+.casa-legend-swatch {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 6px;
+  background: var(--ribbon, var(--casa-orange-500));
+  border: 2px solid var(--casa-white);
+  box-shadow: 0 0 0 2px var(--casa-line);
+  flex: none;
+}
+
+/* Marcadores y ventanas emergentes de Leaflet */
+.casa-pin {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  font-size: 19px;
+  background: var(--casa-orange-500);
+  border: 3px solid var(--casa-white);
+  border-radius: 50% 50% 50% 8px;
+  box-shadow: 0 3px 0 var(--casa-orange-800), 0 6px 12px rgba(18,35,79,.25);
+  transform: rotate(-45deg);
+}
+.casa-pin > span { transform: rotate(45deg); line-height: 1; }
+.casa-pin--blue { background: var(--casa-blue-600); box-shadow: 0 3px 0 var(--casa-blue-900), 0 6px 12px rgba(18,35,79,.25); }
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--casa-r-md);
+  box-shadow: var(--casa-shadow-md);
+  font-family: var(--casa-font-body);
+  color: var(--casa-ink);
+}
+.leaflet-popup-content { margin: 14px 16px; font-size: .95rem; line-height: 1.45; }
+.leaflet-popup-content h4 { font-family: var(--casa-font-display); font-size: 1.1rem; margin: 0 0 .25rem; }
+.leaflet-container { font-family: var(--casa-font-body); background: var(--casa-blue-50); }
+
+/* ---------- 14. Estados: cargando / vacío / error ----------------------- */
+.casa-skeleton {
+  border-radius: var(--casa-r-lg);
+  min-height: 340px;
+  background: linear-gradient(100deg, var(--casa-line) 30%, #F3F6FD 50%, var(--casa-line) 70%);
+  background-size: 200% 100%;
+  animation: casa-shimmer 1.3s linear infinite;
+}
+@keyframes casa-shimmer { to { background-position: -200% 0; } }
+
+.casa-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--casa-white);
+  border: 3px dashed var(--casa-line);
+  border-radius: var(--casa-r-lg);
+}
+.casa-state__emoji { font-size: 3.2rem; display: block; margin-bottom: .4rem; }
+.casa-state h3 { margin-bottom: .3rem; }
+.casa-state p { margin-inline: auto; color: var(--casa-muted); }
+.casa-state--error { border-color: var(--casa-danger-700); }
+.casa-state code { background: var(--casa-blue-50); color: var(--casa-blue-700); padding: .1rem .45rem; border-radius: 6px; }
+
+/* Avisos (toasts) */
+.casa-toast-zone { position: fixed; right: 1rem; bottom: 1rem; z-index: 2000; display: grid; gap: .6rem; max-width: min(92vw, 380px); }
+.casa-toast {
+  background: var(--casa-ink);
+  color: #fff;
+  padding: .8rem 1.1rem;
+  border-radius: var(--casa-r-md);
+  box-shadow: var(--casa-shadow-md);
+  font-weight: 700;
+  border-left: 8px solid var(--casa-orange-500);
+}
+.casa-toast.is-ok  { border-left-color: var(--casa-blue-300); }
+.casa-toast.is-bad { border-left-color: #FF6B86; }
+
+/* Modal de Bootstrap con la forma de la casa */
+.modal-content { border: 0; border-radius: var(--casa-r-lg); box-shadow: var(--casa-shadow-md); }
+.modal-header { border-bottom: 2px dotted var(--casa-line); }
+.modal-footer { border-top: 2px dotted var(--casa-line); }
+
+/* ---------- 15. Pie de página ------------------------------------------- */
+.casa-footer {
+  background: var(--casa-blue-900);
+  color: rgba(255,255,255,.8);
+  padding: 2.5rem 0 2rem;
+  border-radius: var(--casa-r-lg) var(--casa-r-lg) 0 0;
+  position: relative;
+  overflow: hidden;
+}
+.casa-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--casa-paw);
+  background-size: 64px;
+  opacity: .04;
+}
+.casa-footer .container { position: relative; }
+.casa-footer a { color: var(--casa-orange-300); }
+.casa-footer .casa-brand { color: #fff; }
+
+/* ---------- 16. Utilidades ---------------------------------------------- */
+.casa-api-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--casa-muted);
+}
+.casa-api-hint .dot { width: .6rem; height: .6rem; border-radius: 50%; background: var(--casa-line); }
+.casa-api-hint.is-online .dot  { background: var(--casa-blue-600); }
+.casa-api-hint.is-offline .dot { background: var(--casa-danger-700); }
+
+.visually-hidden-focusable:focus { z-index: 3000; }
+
+/* ---------- 17. Responsive y accesibilidad ------------------------------ */
+@media (max-width: 575.98px) {
+  .casa-filters .form-control, .casa-filters .form-select { max-width: none; flex: 1 1 100%; }
+  .casa-hero::after { right: -30%; }
+  .casa-table thead th, .casa-table td { padding: .7rem .75rem; }
+  .btn-casa-lg { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+
+
+/* ==========================================================================
+   18. MEJORAS DE DISEÑO (pegado al final de styles.css, gana sobre lo anterior)
+   ========================================================================== */
+
+/* ---- TU FONDO: cuando lo tengas, guárdalo en wwwroot como fondo.jpg y
+        cambia estas dos líneas (la capa azul hace que el texto se lea):
+          --hero-img:   url('../fondo.jpg');
+          --hero-shade: linear-gradient(rgba(8,51,154,.45), rgba(8,51,154,.8)); */
+:root {
+  --hero-img: url('../fondo.png');
+  --hero-shade: linear-gradient(rgba(8,51,154,.45), rgba(8,51,154,.8));
+}
+
+
+/* ---- Hero: sin patitas, con luz y movimiento ---- */
+.casa-hero {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,.16), transparent 42%),
+    radial-gradient(circle at 80% 90%, rgba(255,122,0,.22), transparent 45%),
+    linear-gradient(135deg, var(--casa-blue-600) 0%, var(--casa-blue-700) 100%);
+}
+.casa-hero::before {
+  background-image: var(--hero-shade), var(--hero-img);
+  background-size: cover;
+  background-position: center;
+  opacity: 1;
+  transform: none;
+}
+.casa-hero::after { animation: casa-blob 14s ease-in-out infinite alternate; }
+@keyframes casa-blob {
+  0%   { border-radius: 58% 42% 55% 45% / 48% 56% 44% 52%; translate: 0 0;        rotate: 0deg; }
+  50%  { border-radius: 42% 58% 45% 55% / 55% 44% 56% 45%; translate: -14px 18px; rotate: 8deg; }
+  100% { border-radius: 50% 50% 38% 62% / 42% 60% 40% 58%; translate: 10px -10px; rotate: -6deg; }
+}
+.casa-float {
+  position: absolute; z-index: -1; left: var(--x); top: var(--y);
+  font-size: var(--s, 2rem); opacity: .2; pointer-events: none;
+  animation: casa-drift var(--d, 12s) ease-in-out infinite alternate;
+}
+@keyframes casa-drift {
+  from { translate: 0 0; rotate: -10deg; }
+  to   { translate: 18px -26px; rotate: 12deg; }
+}
+.casa-hero__stat { backdrop-filter: blur(6px); }
+
+/* ---- Logo ---- */
+.casa-brand__logo.has-img { width: auto; height: 2.9rem; background: none; border-radius: 0; transform: none; }
+.casa-brand__logo img { height: 100%; width: auto; display: block; transition: transform .3s cubic-bezier(.2,.8,.3,1.4); }
+.casa-brand:hover .casa-brand__logo img { transform: rotate(-8deg) scale(1.1); }
+
+/* ---- Menú ---- */
+.casa-nav { transition: box-shadow .25s ease, padding .25s ease; }
+.casa-nav.is-scrolled { box-shadow: 0 8px 22px rgba(18,35,79,.12); padding-block: .3rem; }
+.casa-nav .nav-link { transition: background-color .15s ease, color .15s ease, transform .15s ease; }
+.casa-nav .nav-link:not(.active):hover { transform: translateY(-2px); }
+
+/* ---- Botones: brillo que cruza al pasar el mouse + saltito en el hero ---- */
+.btn-casa, .btn-casa-blue, .btn-casa-ghost { position: relative; overflow: hidden; }
+.btn-casa::after, .btn-casa-blue::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.45) 50%, transparent 65%);
+  translate: -120% 0; transition: translate .6s ease;
+}
+.btn-casa:hover::after, .btn-casa-blue:hover::after { translate: 120% 0; }
+.casa-hero .btn-casa { animation: casa-nudge 5s ease-in-out 2.5s infinite; }
+@keyframes casa-nudge { 0%,88%,100% { translate: 0 0; } 92% { translate: 0 -6px; } 96% { translate: 0 0; } }
+
+/* ---- Tarjetas de mascota ---- */
+.pet-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.pet-card:hover { transform: translateY(-6px) rotate(-.4deg); box-shadow: 0 18px 36px rgba(18,35,79,.16); }
+.pet-card__photo img { transition: transform .5s ease; }
+.pet-card:hover .pet-card__photo img { transform: scale(1.08); }
+.pet-card__ribbon { transition: height .2s ease; }
+.pet-card:hover .pet-card__ribbon { height: 16px; }
+.pet-tag { transition: transform .2s cubic-bezier(.2,.8,.3,1.4); }
+.pet-card:hover .pet-tag { transform: rotate(0deg) scale(1.06); }
+.pet-trait { transition: background-color .15s ease; }
+.pet-card:hover .pet-trait { background: var(--casa-blue-100); }
+
+/* ---- Accesos rápidos, cifras y tarjetas genéricas ---- */
+.casa-quick { position: relative; overflow: hidden; }
+.casa-quick::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px;
+  background: repeating-linear-gradient(90deg, var(--casa-orange-500) 0 22px, var(--casa-blue-600) 22px 44px);
+  translate: 0 100%; transition: translate .25s ease;
+}
+.casa-quick:hover::after { translate: 0 0; }
+.casa-quick:hover .casa-quick__icon { animation: casa-wiggle .5s ease; }
+@keyframes casa-wiggle { 25% { rotate: -10deg; } 50% { rotate: 8deg; } 75% { rotate: -4deg; } 100% { rotate: 0deg; } }
+.casa-counter, .casa-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.casa-counter:hover, .casa-card:hover { transform: translateY(-4px); box-shadow: var(--casa-shadow-md); border-color: var(--casa-orange-300); }
+
+/* ---- Banda de llamada a la acción con degradado que fluye ---- */
+.casa-cta {
+  background: linear-gradient(120deg, var(--casa-orange-500), #FF9E45, var(--casa-orange-500));
+  background-size: 200% 100%;
+  animation: casa-flow 9s linear infinite;
+}
+@keyframes casa-flow { to { background-position: -200% 0; } }
+
+/* ---- Badges: los "pendiente" laten ---- */
+.casa-badge.is-wait::before { animation: casa-pulse 1.8s ease-out infinite; }
+@keyframes casa-pulse { 0% { box-shadow: 0 0 0 0 rgba(232,99,0,.55); } 70%,100% { box-shadow: 0 0 0 7px rgba(232,99,0,0); } }
+
+/* ---- Formularios ---- */
+.casa-form-card { transition: box-shadow .2s ease; }
+.casa-form-card:focus-within { box-shadow: 0 16px 36px rgba(18,35,79,.16); }
+.form-control, .form-select { transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.form-control:focus, .form-select:focus { transform: translateY(-1px); }
+.casa-filters { transition: box-shadow .2s ease; }
+.casa-filters:focus-within { box-shadow: 0 16px 36px rgba(18,35,79,.16); }
+
+/* ---- Pie de página: borde superior con cinta ---- */
+.casa-footer { border-top: 6px solid transparent;
+  border-image: repeating-linear-gradient(90deg, var(--casa-orange-500) 0 22px, var(--casa-blue-600) 22px 44px) 1; border-radius: 0; }
+
+/* ---- Barra de scroll ---- */
+html { scrollbar-color: var(--casa-blue-300) var(--casa-blue-50); }
+
+/* ---- Aparecer al hacer scroll (lo activa el JS agregado a common.js) ---- */
+.reveal {
+  opacity: 0; translate: 0 22px;
+  transition: opacity .6s ease, translate .6s cubic-bezier(.2,.8,.3,1), transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.reveal.is-in { opacity: 1; translate: 0 0; }
+
+
+
+/* ==========================================================================
+   19. MENÚ DE COLOR · PATITA · ACCESOS RÁPIDOS · BOTÓN LEGIBLE
+   (pegar al final de styles.css, después del bloque 18)
+   ========================================================================== */
+
+/* ---- Menú azul oscuro con filo naranja ---- */
+.casa-nav {
+  background: linear-gradient(90deg, var(--casa-blue-900) 0%, var(--casa-blue-700) 100%);
+  border-bottom: 4px solid var(--casa-orange-500);
+  backdrop-filter: none;
+}
+.casa-brand, .casa-brand:hover { color: #fff; }
+.casa-brand small { color: rgba(255,255,255,.72); }
+.casa-nav .nav-link { color: #fff; }
+.casa-nav .nav-link:hover { background: rgba(255,255,255,.14); color: #fff; }
+.casa-nav .nav-link.active {
+  background: var(--casa-orange-500);
+  color: var(--casa-ink);
+  box-shadow: 0 3px 0 var(--casa-orange-800);
+}
+.casa-nav .navbar-toggler { border-color: rgba(255,255,255,.7); }
+.casa-nav .navbar-toggler-icon { filter: invert(1); }
+
+/* Logo en JPG: va dentro de una placa blanca para que no se vea el rectángulo */
+.casa-brand__logo.has-img {
+  height: 3rem;
+  padding: .2rem;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 3px 0 rgba(0,0,0,.25);
+}
+.casa-brand__logo img { object-fit: contain; }
+
+/* ---- Hero: patita en lugar de la mancha ---- */
+.casa-float { display: none; }            /* el fondo nuevo ya tiene suficientes adornos */
+.casa-hero h1 { text-shadow: 0 3px 0 rgba(8,51,154,.55), 0 8px 24px rgba(0,0,0,.25); }
+.casa-hero .lead { text-shadow: 0 1px 10px rgba(8,51,154,.85); }
+
+.casa-hero::after {
+  right: 3%;
+  top: -6%;
+  width: min(34vw, 400px);
+  aspect-ratio: 1;
+  border-radius: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23FF7A00'%3E%3Cellipse cx='18' cy='44' rx='9' ry='12' transform='rotate(-22 18 44)'/%3E%3Cellipse cx='37' cy='22' rx='10' ry='14' transform='rotate(-8 37 22)'/%3E%3Cellipse cx='63' cy='22' rx='10' ry='14' transform='rotate(8 63 22)'/%3E%3Cellipse cx='82' cy='44' rx='9' ry='12' transform='rotate(22 82 44)'/%3E%3Cpath d='M50 46c-14 0-27 15-27 28 0 9 7 14 15 14 5 0 8-3 12-3s7 3 12 3c8 0 15-5 15-14 0-13-13-28-27-28z'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 12px 0 rgba(143,61,0,.55));
+  rotate: 14deg;
+  animation: casa-paw 6s ease-in-out infinite;
+}
+@keyframes casa-paw {
+  0%, 100% { translate: 0 0;      rotate: 14deg; }
+  50%      { translate: -8px 14px; rotate: 20deg; }
+}
+.casa-hero--page::after { width: min(22vw, 200px); top: -10%; right: 4%; }
+@media (max-width: 575.98px) {
+  .casa-hero::after { right: -6%; top: -4%; width: 48vw; }
+  .casa-hero--page::after { width: 32vw; top: -6%; }
+}
+
+/* ---- Botón "Reportar un animal": blanco sólido, se lee sobre cualquier fondo ---- */
+.casa-hero .btn-casa-ghost {
+  --_bg: #fff;
+  --_fg: var(--casa-blue-700);
+  --_edge: var(--casa-blue-300);
+  border-color: #fff;
+}
+
+/* ---- Accesos rápidos (Mascotas, Reportes, Adopciones, Veterinarias, Mapa) ---- */
+.casa-quick {
+  --tone: #FF7A00; --tone-soft: #FFE9D2; --tone-dark: #8F3D00;
+  padding: 1.5rem 1.5rem 1.4rem;
+  background: linear-gradient(160deg, var(--tone-soft) 0%, #fff 58%);
+  border-color: color-mix(in srgb, var(--tone) 25%, #fff);
+}
+:is(*:nth-child(5n+2) > .casa-quick, .casa-quick:nth-child(5n+2)) { --tone: #EF476F; --tone-soft: #FFE3EA; --tone-dark: #9B1C3A; }
+:is(*:nth-child(5n+3) > .casa-quick, .casa-quick:nth-child(5n+3)) { --tone: #0B47C9; --tone-soft: #DCE6FF; --tone-dark: #0A1F5C; }
+:is(*:nth-child(5n+4) > .casa-quick, .casa-quick:nth-child(5n+4)) { --tone: #12A594; --tone-soft: #D5F5EF; --tone-dark: #0A5C52; }
+:is(*:nth-child(5n+5) > .casa-quick, .casa-quick:nth-child(5n+5)) { --tone: #F2A900; --tone-soft: #FFF0C2; --tone-dark: #7A5400; }
+
+.casa-quick > * { position: relative; z-index: 1; }
+.casa-quick:hover {
+  transform: translateY(-6px);
+  border-color: var(--tone);
+  box-shadow: 0 16px 32px color-mix(in srgb, var(--tone) 28%, transparent);
+}
+.casa-quick::before {                     /* círculo grande de fondo */
+  content: "";
+  position: absolute;
+  right: -2.2rem;
+  top: -2.2rem;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  background: var(--tone);
+  opacity: .1;
+  transition: scale .35s ease;
+}
+.casa-quick:hover::before { scale: 1.45; }
+
+.casa-quick .casa-quick__icon {
+  width: 4.2rem;
+  height: 4.2rem;
+  font-size: 2.2rem;
+  margin-bottom: .7rem;
+  background: var(--tone) !important;
+  border-radius: 22px 22px 22px 6px;
+  box-shadow: 0 5px 0 var(--tone-dark);
+  rotate: -5deg;
+  transition: rotate .25s cubic-bezier(.2,.8,.3,1.4), scale .25s ease;
+}
+.casa-quick:hover .casa-quick__icon { rotate: 5deg; scale: 1.08; animation: none; }
+
+.casa-quick h3 { font-size: 1.35rem; transition: color .2s ease; }
+.casa-quick:hover h3 { color: var(--tone-dark); }
+.casa-quick p { padding-right: 3rem; }
+
+.casa-quick::after {                      /* botoncito de flecha */
+  content: "›";
+  left: auto;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  padding-bottom: .15rem;
+  border-radius: 50%;
+  background: var(--tone);
+  color: #fff;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 3px 0 var(--tone-dark);
+  translate: 0 0;
+  transition: transform .2s ease;
+}
+.casa-quick:hover::after { transform: translateX(5px); }
+
+/* ---- Íconos dibujados para Veterinarias y Mapa (no dependen de emojis) ---- */
+.casa-quick[href*="establecimientos"] .casa-quick__icon,
+.casa-quick[href*="mapa"] .casa-quick__icon {
+  font-size: 0;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 58% !important;
+}
+.casa-quick[href*="establecimientos"] .casa-quick__icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' fill-rule='evenodd' d='M12 2.5 1.5 11.5H4V21h16v-9.5h2.5zM10.8 11h2.4v2.3h2.3v2.4h-2.3V18h-2.4v-2.3H8.5v-2.4h2.3z'/%3E%3C/svg%3E") !important;
+}
+.casa-quick[href*="mapa"] .casa-quick__icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' fill-rule='evenodd' d='M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E") !important;
+}
+
+
+/* Logo PNG transparente: sin placa blanca */
+.casa-brand__logo.has-img {
+  height: 3.2rem;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.casa-brand__logo img { filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .25)); }

@@ -30,11 +30,6 @@
           <li class="nav-item d-none" id="menu-mapa"><a class="nav-link" href="/Mapa">Mapa</a></li>
           <li class="nav-item d-none" id="menu-veterinarias"><a class="nav-link" href="/Establecimientos">Veterinarias</a></li>
           <li class="nav-item d-none" id="menu-admin">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Administración</a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="/Admin/Usuarios">Usuarios</a></li>
-            </ul>
-          </li>
           <li class="nav-item ms-3" id="auth-buttons"></li>
         </ul>
       </div>
@@ -64,8 +59,61 @@
     </div>
   </footer>
 
+  <!-- 1. Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
   
+  <!-- 2. SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- 3. Función confirmarAccion MEJORADA CON LOGS DETALLADOS -->
+  <script>
+    window.confirmarAccion = function(mensaje, urlDestino, formElement) {
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: mensaje,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, continuar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          if (formElement) {
+            console.log('✅ CONFIRMADO: Ejecutando formElement.submit()');
+            console.log('🎯 Action del formulario:', formElement.action);
+            console.log('🎯 Method del formulario:', formElement.method);
+            formElement.submit();
+          } else if (urlDestino) {
+            console.log('✅ Redirigiendo a:', urlDestino);
+            window.location.href = urlDestino;
+          }
+        } else {
+          console.log('❌ Acción cancelada por el usuario');
+        }
+      });
+      return false; // Previene la acción por defecto del navegador
+    };
+
+    // Notificaciones automáticas desde TempData
+    document.addEventListener('DOMContentLoaded', function() {
+      const successMsg = '@TempData["Success"]';
+      const errorMsg = '@TempData["Error"]';
+      const warningMsg = '@TempData["Warning"]';
+
+      if (successMsg) {
+        Swal.fire({ icon: 'success', title: '¡Éxito!', text: successMsg, timer: 3000, showConfirmButton: false });
+      }
+      if (errorMsg) {
+        Swal.fire({ icon: 'error', title: 'Error', text: errorMsg });
+      }
+      if (warningMsg) {
+        Swal.fire({ icon: 'warning', title: 'Atención', text: warningMsg });
+      }
+    });
+  </script>
+
+  <!-- 4. Lógica de Autenticación -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       try {
@@ -87,9 +135,7 @@
           const rol = (user.rol || user.Rol || '').toLowerCase();
           const esAdmin = rol === 'administrador';
           const esRescatista = rol === 'rescatista';
-          const esCiudadano = rol === 'ciudadano' || !esAdmin && !esRescatista;
 
-          // Mostrar menú según rol
           Object.values(menuItems).forEach(item => {
             if (item) item.classList.remove('d-none');
           });
@@ -112,7 +158,6 @@
           });
 
         } else {
-          // Ocultar menús protegidos
           Object.values(menuItems).forEach(item => {
             if (item) item.classList.add('d-none');
           });
@@ -129,8 +174,12 @@
       }
     });
   </script>
-  
+
+  <!-- 5. Scripts comunes del proyecto -->
   <script src="~/js/common.js"></script>
+  
+  <!-- 6. Renderizado de secciones de scripts de las vistas -->
   @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

@@ -69,19 +69,44 @@
 <script>
 function obtenerUbicacionGPS() {
   if (navigator.geolocation) {
+    Swal.fire({
+      title: 'Obteniendo ubicación...',
+      text: 'Por favor espera...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+    
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         document.getElementById('ubicacion').value = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+        Swal.close();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Ubicación obtenida!',
+          text: `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`,
+          timer: 2000,
+          showConfirmButton: false
+        });
       },
       (error) => {
-        alert('❌ No se pudo obtener la ubicación. Permítela en tu navegador.');
+        Swal.close();
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de ubicación',
+          text: 'No se pudo obtener tu ubicación. Asegúrate de permitir el acceso en tu navegador.'
+        });
       }
     );
   } else {
-    alert('❌ Tu navegador no soporta geolocalización');
+    Swal.fire({
+      icon: 'error',
+      title: 'Geolocalización no disponible',
+      text: 'Tu navegador no soporta geolocalización'
+    });
   }
 }
 </script>
+}
 }

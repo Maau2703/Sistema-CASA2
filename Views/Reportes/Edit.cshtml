@@ -2,13 +2,12 @@
 @{ 
     ViewData["Title"] = "Actualizar Reporte"; 
     Layout = "_Layout"; 
-    var tipos = ViewBag.Tipos as List<Proyecto.Models.TipoReporte>; 
 }
 
 <header class="casa-hero casa-hero--page">
     <div class="container">
         <h1>Actualizar Estado del Reporte</h1>
-        <p>Modifica el estado de seguimiento de este reporte.</p>
+        <p>Modifica el estado y agrega detalles de la resolución.</p>
     </div>
 </header>
 
@@ -16,7 +15,13 @@
   <div class="casa-form-card" style="max-width:700px;margin:0 auto;">
     <form asp-action="Edit" method="post">
       @Html.AntiForgeryToken()
-      <input type="hidden" name="Id" value="@Model.Id"/>
+      
+      <!-- Campos ocultos para preservar datos y evitar errores de FK -->
+      <input type="hidden" name="Id" value="@Model.Id" />
+      <input type="hidden" name="tipoReportesId" value="@Model.tipoReportesId" />
+      <input type="hidden" name="Ubicaion" value="@Model.Ubicaion" />
+      <input type="hidden" name="Descripcion" value="@Model.Descripcion" />
+      <input type="hidden" name="CiudadanoId" value="@Model.CiudadanoId" />
       
       <div class="mb-3">
         <label class="form-label text-muted">Tipo de reporte</label>
@@ -28,13 +33,8 @@
         <input type="text" class="form-control" value="@Model.Ubicaion" readonly>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label text-muted">Descripción original</label>
-        <textarea class="form-control" rows="3" readonly>@Model.Descripcion</textarea>
-      </div>
-
-      <!-- CAMPO CLAVE: Cambiar el estado -->
-      <div class="mb-4 p-3 bg-light rounded border">
+      <!-- ✅ CAMPO CLAVE 1: Cambiar el estado -->
+      <div class="mb-3 p-3 bg-light rounded border">
         <label class="form-label fw-bold text-primary">Nuevo Estado del Reporte *</label>
         <select name="estado" class="form-select form-select-lg" required>
             <option value="Pendiente" selected="@(Model.estado == "Pendiente")">⏳ Pendiente</option>
@@ -42,8 +42,15 @@
             <option value="Resuelto" selected="@(Model.estado == "Resuelto")">✅ Resuelto (Encontrado/Atendido)</option>
             <option value="Falso" selected="@(Model.estado == "Falso")">❌ Reporte Falso / No encontrado</option>
         </select>
+      </div>
+
+      <!-- ✅ CAMPO CLAVE 2: Comentario de resolución -->
+      <div class="mb-4">
+        <label class="form-label fw-bold">📝 Comentario o Nota de Resolución</label>
+        <textarea name="ComentarioResolucion" class="form-control" rows="4" 
+                  placeholder="Ej: Se encontró al animal en la calle X, fue llevado al albergue y está a salvo.">@Model.ComentarioResolucion</textarea>
         <div class="form-text mt-2">
-            ℹ️ Solo el administrador, un rescatista o el usuario que creó este reporte pueden actualizar su estado.
+            ℹ️ Este comentario será visible para el usuario que hizo el reporte.
         </div>
       </div>
 

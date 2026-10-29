@@ -42,13 +42,26 @@
       <dd class="col-sm-8">@Model.Distritos?.nombre</dd>
     </dl>
 
-    <form asp-action="Delete" method="post">
+    <form asp-action="Delete" method="post" id="form-delete-mascota">
       @Html.AntiForgeryToken()
       <input type="hidden" asp-for="Id" />
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-danger btn-lg">🗑️ Sí, eliminar</button>
+        <button type="submit" class="btn btn-danger btn-lg" id="btn-delete">🗑️ Sí, eliminar</button>
         <a class="btn btn-casa-ghost btn-casa btn-lg" href="/Mascotas">Cancelar</a>
       </div>
     </form>
   </div>
 </div>
+
+@section Scripts {
+<script>
+  document.getElementById('form-delete-mascota').addEventListener('submit', function(e) {
+    e.preventDefault();
+    confirmarAccion(
+      '¿Estás seguro de eliminar esta mascota permanentemente?',
+      null,
+      this
+    );
+  });
+</script>
+}

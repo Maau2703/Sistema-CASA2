@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Proyecto.Data;
 using Proyecto.Models;
+using Proyecto.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,10 +27,28 @@ public class ReportesController : Controller
     {
         try
         {
-            ViewBag.Reportes = await _context.Reportes
+            var reportes = await _context.Reportes
                 .Include(r => r.TipoReporte)
                 .OrderByDescending(r => r.Fecha)
                 .ToListAsync();
+
+            ViewBag.Reportes = reportes;
+
+            var userCi = User.FindFirst("ci")?.Value;
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+            ViewBag.EsAdmin = userRole?.ToLower() == "administrador";
+            ViewBag.EsRescatista = userRole?.ToLower() == "rescatista";
+
+            if (!ViewBag.EsAdmin && !ViewBag.EsRescatista && !string.IsNullOrEmpty(userCi))
+            {
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.ci == userCi);
+                if (usuario != null)
+                {
+                    var ciudadano = await _context.Ciudadanos.FirstOrDefaultAsync(c => c.UsuarioId == usuario.Id);
+                    ViewBag.CiudadanoId = ciudadano?.Id; 
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -56,7 +75,6 @@ public class ReportesController : Controller
                 model.Fecha = DateTime.Now;
                 model.estado = "Pendiente";
                 
-                // Asignar ciudadano actual si está logueado, o dejar null si es anónimo
                 var userCi = User.FindFirst("ci")?.Value;
                 if (!string.IsNullOrEmpty(userCi))
                 {
@@ -70,22 +88,15 @@ public class ReportesController : Controller
 
                 if (imagenFile != null && imagenFile.Length > 0)
                 {
-                    try
+                    var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "reportes");
+                    Directory.CreateDirectory(uploadsFolder);
+                    var fileName = $"reporte_{Guid.NewGuid()}{Path.GetExtension(imagenFile.FileName)}";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "reportes");
-                        Directory.CreateDirectory(uploadsFolder);
-                        var fileName = $"reporte_{Guid.NewGuid()}{Path.GetExtension(imagenFile.FileName)}";
-                        var filePath = Path.Combine(uploadsFolder, fileName);
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await imagenFile.CopyToAsync(stream);
-                        }
-                        model.ImagenUrl = $"/uploads/reportes/{fileName}";
+                        await imagenFile.CopyToAsync(stream);
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"⚠️ Error al subir imagen: {ex.Message}");
-                    }
+                    model.ImagenUrl = $"/uploads/reportes/{fileName}";
                 }
 
                 _context.Reportes.Add(model);
@@ -104,7 +115,6 @@ public class ReportesController : Controller
         return View(model);
     }
 
-    // GET: Editar Reporte (Con validación de permisos)
     [HttpGet]
     public async Task<IActionResult> Edit(int? id)
     {
@@ -113,81 +123,84 @@ public class ReportesController : Controller
         var reporte = await _context.Reportes.Include(r => r.TipoReporte).FirstOrDefaultAsync(r => r.Id == id);
         if (reporte == null) return NotFound();
 
-        // 1. Obtener datos del usuario logueado desde el JWT
         var userCi = User.FindFirst("ci")?.Value;
         var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        int? ciudadanoIdActual = null;
 
-        bool esAdmin = userRole == "Administrador";
-        bool esRescatista = userRole == "Rescatista";
-        bool esDueno = false;
-
-        // 2. Si no es admin ni rescatista, verificar si es el ciudadano que lo creó
-        if (!esAdmin && !esRescatista && !string.IsNullOrEmpty(userCi))
+        if (!string.IsNullOrEmpty(userCi))
         {
             var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.ci == userCi);
             if (usuario != null)
             {
                 var ciudadano = await _context.Ciudadanos.FirstOrDefaultAsync(c => c.UsuarioId == usuario.Id);
-                if (ciudadano != null && ciudadano.Id == reporte.CiudadanoId)
-                {
-                    esDueno = true;
-                }
+                ciudadanoIdActual = ciudadano?.Id;
             }
         }
 
-        // 3. Si no cumple ninguna condición, denegar acceso
-        if (!esAdmin && !esRescatista && !esDueno)
+        if (!PermissionHelper.CanManageReport(userRole, ciudadanoIdActual, reporte.CiudadanoId))
         {
-            return RedirectToAction("AccessDenied", "Auth");
+            TempData["Error"] = "No tienes permisos para editar este reporte.";
+            return RedirectToAction(nameof(Index));
         }
 
         ViewBag.Tipos = await _context.TipoReportes.ToListAsync();
         return View(reporte);
     }
 
-    // POST: Editar Reporte (Re-validación de seguridad)
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, Reportes model)
     {
         if (id != model.Id) return NotFound();
 
-        var reporteOriginal = await _context.Reportes.FindAsync(id);
+        var reporteOriginal = await _context.Reportes.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
         var userCi = User.FindFirst("ci")?.Value;
         var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-        
-        bool esAdmin = userRole == "Administrador";
-        bool esRescatista = userRole == "Rescatista";
-        bool esDueno = false;
+        int? ciudadanoIdActual = null;
 
-        if (!esAdmin && !esRescatista && !string.IsNullOrEmpty(userCi))
+        if (!string.IsNullOrEmpty(userCi))
         {
             var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.ci == userCi);
             if (usuario != null)
             {
                 var ciudadano = await _context.Ciudadanos.FirstOrDefaultAsync(c => c.UsuarioId == usuario.Id);
-                if (ciudadano != null && ciudadano.Id == reporteOriginal.CiudadanoId)
-                {
-                    esDueno = true;
-                }
+                ciudadanoIdActual = ciudadano?.Id;
             }
         }
 
-        if (!esAdmin && !esRescatista && !esDueno)
+        if (!PermissionHelper.CanManageReport(userRole, ciudadanoIdActual, reporteOriginal.CiudadanoId))
         {
-            return RedirectToAction("AccessDenied", "Auth");
+            TempData["Error"] = "No tienes permisos para editar este reporte.";
+            return RedirectToAction(nameof(Index));
         }
 
         if (ModelState.IsValid)
         {
-            // Mantener el CiudadanoId original por seguridad
-            model.CiudadanoId = reporteOriginal.CiudadanoId;
-            model.RescatistasId = reporteOriginal.RescatistasId;
-            
-            _context.Entry(model).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "Estado del reporte actualizado correctamente.";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var reporte = await _context.Reportes.FindAsync(id);
+                if (reporte == null) return NotFound();
+
+                // ✅ ACTUALIZAR ESTADO Y EL NUEVO COMENTARIO
+                reporte.estado = model.estado;
+                reporte.ComentarioResolucion = model.ComentarioResolucion; 
+                
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Reporte actualizado correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ReportesExists(id)) return NotFound();
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ ERROR AL ACTUALIZAR: {ex.Message}");
+                TempData["Error"] = $"Error al actualizar: {ex.Message}";
+                ViewBag.Tipos = await _context.TipoReportes.ToListAsync();
+                return View(model);
+            }
         }
         
         ViewBag.Tipos = await _context.TipoReportes.ToListAsync();
@@ -201,15 +214,41 @@ public class ReportesController : Controller
         var model = await _context.Reportes.FindAsync(id);
         if (model != null)
         {
-            if (!string.IsNullOrEmpty(model.ImagenUrl))
+            var userCi = User.FindFirst("ci")?.Value;
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            int? ciudadanoIdActual = null;
+
+            if (!string.IsNullOrEmpty(userCi))
             {
-                var filePath = Path.Combine(_environment.WebRootPath, model.ImagenUrl.TrimStart('/'));
-                if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.ci == userCi);
+                if (usuario != null)
+                {
+                    var ciudadano = await _context.Ciudadanos.FirstOrDefaultAsync(c => c.UsuarioId == usuario.Id);
+                    ciudadanoIdActual = ciudadano?.Id;
+                }
             }
-            _context.Reportes.Remove(model);
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "Reporte eliminado.";
+
+            if (PermissionHelper.CanManageReport(userRole, ciudadanoIdActual, model.CiudadanoId))
+            {
+                if (!string.IsNullOrEmpty(model.ImagenUrl))
+                {
+                    var filePath = Path.Combine(_environment.WebRootPath, model.ImagenUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+                }
+                _context.Reportes.Remove(model);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Reporte eliminado.";
+            }
+            else
+            {
+                TempData["Error"] = "No tienes permisos para eliminar este reporte.";
+            }
         }
         return RedirectToAction(nameof(Index));
+    }
+
+    private bool ReportesExists(int id)
+    {
+        return _context.Reportes.Any(e => e.Id == id);
     }
 }
